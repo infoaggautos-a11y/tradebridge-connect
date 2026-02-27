@@ -90,35 +90,49 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 <Globe className="h-6 w-6 text-gold" />
                 <span className="text-white font-bold">DIL Global Trade</span>
               </div>
-              <p className="text-sm">Connecting Nigerian businesses with global trade opportunities.</p>
+              <p className="text-sm mb-4">Dauno Integrated Ltd (DIL) — a transnational company incorporated in Abuja, Nigeria. Specializing in Business Re-engineering, Trade Promotion, and international commerce facilitation.</p>
+              <div className="flex gap-3">
+                <a href="https://www.facebook.com/profile.php?id=100090199276052" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors text-sm">Facebook</a>
+                <a href="https://twitter.com/daunoglobal" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors text-sm">Twitter</a>
+                <a href="https://www.linkedin.com/company/daunointegrated-ltd/" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors text-sm">LinkedIn</a>
+                <a href="https://www.youtube.com/channel/UCPCfjapurX6wTFQmliOyGCA" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors text-sm">YouTube</a>
+              </div>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-3 text-sm">Platform</h4>
               <div className="space-y-2 text-sm">
-                <Link to="/directory" className="block hover:text-gold">Business Directory</Link>
-                <Link to="/events" className="block hover:text-gold">Events & Delegations</Link>
-                <Link to="/membership" className="block hover:text-gold">Membership</Link>
+                <Link to="/directory" className="block hover:text-gold transition-colors">Business Directory</Link>
+                <Link to="/events" className="block hover:text-gold transition-colors">Events & Delegations</Link>
+                <Link to="/membership" className="block hover:text-gold transition-colors">Membership Plans</Link>
+                <Link to="/login" className="block hover:text-gold transition-colors">TradeMatch Engine</Link>
               </div>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-3 text-sm">Company</h4>
               <div className="space-y-2 text-sm">
-                <span className="block">About DIL</span>
-                <span className="block">Contact Us</span>
-                <span className="block">Careers</span>
+                <a href="https://www.daunointegrated.com/about-us/" target="_blank" rel="noopener noreferrer" className="block hover:text-gold transition-colors">About DIL</a>
+                <a href="https://www.daunointegrated.com/our-business/" target="_blank" rel="noopener noreferrer" className="block hover:text-gold transition-colors">Our Business</a>
+                <a href="https://www.daunointegrated.com/partners/" target="_blank" rel="noopener noreferrer" className="block hover:text-gold transition-colors">Partners</a>
+                <a href="https://www.daunointegrated.com/contact-us/" target="_blank" rel="noopener noreferrer" className="block hover:text-gold transition-colors">Contact Us</a>
+                <a href="https://dilptp.com/" target="_blank" rel="noopener noreferrer" className="block hover:text-gold transition-colors">DIL Training Programmes</a>
               </div>
             </div>
             <div>
-              <h4 className="text-white font-semibold mb-3 text-sm">Legal</h4>
+              <h4 className="text-white font-semibold mb-3 text-sm">Contact</h4>
               <div className="space-y-2 text-sm">
-                <span className="block">Terms of Service</span>
-                <span className="block">Privacy Policy</span>
-                <span className="block">Cookie Policy</span>
+                <p>Abuja, Nigeria</p>
+                <p>+234 909 478 3662</p>
+                <p>info@daunointegrated.com</p>
+                <p className="text-xs mt-4">RC: 1963419</p>
               </div>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-navy-light text-center text-sm">
-            © 2026 Dauno Integrated Ltd. All rights reserved.
+          <div className="mt-8 pt-8 border-t border-navy-light flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
+            <span>© 2026 Dauno Integrated Ltd. All rights reserved.</span>
+            <div className="flex gap-4">
+              <span className="hover:text-gold cursor-pointer transition-colors">Terms of Service</span>
+              <span className="hover:text-gold cursor-pointer transition-colors">Privacy Policy</span>
+            </div>
           </div>
         </div>
       </footer>
