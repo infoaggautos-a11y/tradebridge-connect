@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { BrandBar } from '@/branding/BrandBar';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Globe, Menu, X } from 'lucide-react';
@@ -17,6 +18,7 @@ export function PublicNavbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-navy border-b border-navy-light">
+      <BrandBar />
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
           <Globe className="h-8 w-8 text-gold" />
