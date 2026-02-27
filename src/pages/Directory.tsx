@@ -7,7 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { Search, CheckCircle, Shield, Star } from 'lucide-react';
+import { Search, CheckCircle, Shield, Star, Building2, MapPin, Package } from 'lucide-react';
+
+import logisticsImage from '@/assets/logistics-port.jpg';
 
 const verificationIcons = {
   basic: <Shield className="h-3 w-3" />,
@@ -39,18 +41,23 @@ export default function DirectoryPage() {
 
   return (
     <PublicLayout>
-      <div className="bg-navy py-12">
-        <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold text-white mb-2">Business Directory</h1>
-          <p className="text-gray-300">Discover verified businesses across Africa and Europe.</p>
+      {/* Hero banner */}
+      <div className="relative overflow-hidden">
+        <img src={logisticsImage} alt="Global Trade" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-navy/85" />
+        <div className="container mx-auto px-4 py-16 relative z-10">
+          <Badge className="bg-gold/20 text-gold border-gold/30 mb-4">Business Directory</Badge>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Discover Verified Trade Partners</h1>
+          <p className="text-gray-300 max-w-2xl">Browse our network of verified businesses across Africa and Europe. Filter by sector, country, and verification level to find your ideal trade partner.</p>
         </div>
       </div>
+
       <div className="container mx-auto px-4 py-8">
         {/* Filters */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search businesses..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+            <Input placeholder="Search businesses, products..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={sectorFilter} onValueChange={setSectorFilter}>
             <SelectTrigger><SelectValue placeholder="Sector" /></SelectTrigger>
@@ -82,12 +89,17 @@ export default function DirectoryPage() {
         {/* Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map(biz => (
-            <Card key={biz.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/directory/${biz.id}`)}>
+            <Card key={biz.id} className="hover:shadow-lg transition-shadow cursor-pointer group" onClick={() => navigate(`/directory/${biz.id}`)}>
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-foreground">{biz.name}</h3>
-                    <p className="text-sm text-muted-foreground">{biz.country}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gold/10 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-gold/20 transition-colors">
+                      <Building2 className="h-5 w-5 text-gold" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground group-hover:text-gold transition-colors">{biz.name}</h3>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{biz.country}</p>
+                    </div>
                   </div>
                   <Badge className={`${verificationColors[biz.verificationLevel]} text-xs`}>
                     {verificationIcons[biz.verificationLevel]}
@@ -97,11 +109,19 @@ export default function DirectoryPage() {
                 <div className="flex flex-wrap gap-1 mb-3">
                   {biz.sectors.map(s => <Badge key={s} variant="outline" className="text-xs">{s}</Badge>)}
                 </div>
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{biz.description}</p>
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{biz.description}</p>
+                <div className="flex flex-wrap gap-1 mb-4">
+                  {biz.products.slice(0, 3).map(p => (
+                    <span key={p} className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                      <Package className="h-3 w-3" /> {p}
+                    </span>
+                  ))}
+                  {biz.products.length > 3 && <span className="text-xs text-muted-foreground">+{biz.products.length - 3} more</span>}
+                </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Trade Readiness</span>
-                    <span className="font-medium">{biz.tradeReadinessScore}%</span>
+                    <span className="font-medium text-gold">{biz.tradeReadinessScore}%</span>
                   </div>
                   <Progress value={biz.tradeReadinessScore} className="h-2" />
                 </div>
