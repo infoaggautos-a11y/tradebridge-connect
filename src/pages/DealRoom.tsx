@@ -34,6 +34,7 @@ import {
   Wallet,
   RefreshCw,
   MoreHorizontal,
+  Upload,
 } from 'lucide-react';
 
 export default function DealRoom() {
