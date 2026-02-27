@@ -3,7 +3,8 @@ import { AdminLayout } from '@/layouts/AdminLayout';
 import { businesses, events, sampleMatches, activityLog } from '@/data/mockData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Building2, CheckCircle, Users, Handshake, CalendarDays, CreditCard, TrendingUp, DollarSign } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Building2, CheckCircle, Users, Handshake, CalendarDays, CreditCard, TrendingUp, DollarSign, Presentation } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 
 const kpis = [
@@ -36,7 +37,13 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          <Button variant="outline" onClick={() => window.open('/presentation.html', '_blank')}>
+            <Presentation className="h-4 w-4 mr-2" />
+            View Presentation
+          </Button>
+        </div>
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">

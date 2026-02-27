@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TradeBridge Connect - Presentation</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/theme/white.css">
+  <style>
+    :root {
+      --navy: #0a1628;
+      --navy-light: #1a2d4a;
+      --gold: #d4a84b;
+      --gold-light: #e8c97a;
+    }
+    .reveal { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .reveal .slides section { text-align: left; }
+    .reveal .slides section.center { text-align: center; }
+    .reveal h1 { color: var(--navy); font-weight: 700; }
+    .reveal h2 { color: var(--navy); font-weight: 600; }
+    .reveal h3 { color: var(--navy); }
+    .reveal .highlight { color: var(--gold); }
+    .reveal .navy { color: var(--navy); }
+    .reveal .navy-light { color: var(--navy-light); }
+    .reveal .gold { color: var(--gold); }
+    .reveal .bg-navy { background-color: var(--navy); }
+    .reveal .bg-gold { background-color: var(--gold); }
+    .reveal .slide-content { font-size: 0.85em; }
+    .reveal ul { margin-left: 0; list-style: none; }
+    .reveal ul li { padding-left: 1.5em; position: relative; margin-bottom: 0.5em; }
+    .reveal ul li::before { content: "▸"; color: var(--gold); position: absolute; left: 0; }
+    .reveal .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1em; margin-top: 1em; }
+    .reveal .stat-box { background: var(--navy); color: white; padding: 1em; border-radius: 8px; text-align: center; }
+    .reveal .stat-value { font-size: 2em; font-weight: bold; color: var(--gold); }
+    .reveal .stat-label { font-size: 0.7em; opacity: 0.9; }
+    .reveal .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1em; }
+    .reveal .feature-card { background: #f8f9fa; padding: 1em; border-radius: 8px; border-left: 4px solid var(--gold); }
+    .reveal .feature-title { font-weight: 600; color: var(--navy); margin-bottom: 0.3em; }
+    .reveal .feature-desc { font-size: 0.7em; color: #666; }
+    .reveal .step-number { font-size: 3em; font-weight: bold; color: var(--gold); opacity: 0.3; position: absolute; top: 0; right: 0; }
+    .reveal .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1em; }
+    .reveal .step { text-align: center; position: relative; padding-top: 2em; }
+    .reveal .step-icon { width: 60px; height: 60px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5em; font-size: 1.5em; }
+    .reveal .logo-container { display: flex; align-items: center; justify-content: center; gap: 1em; }
+    .reveal .logo { width: 80px; height: 80px; background: var(--navy); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--gold); font-weight: bold; font-size: 0.8em; }
+    .reveal .cta-box { background: var(--navy); color: white; padding: 2em; border-radius: 12px; text-align: center; }
+    .reveal .cta-box h3 { color: white; }
+    .reveal .cta-box p { opacity: 0.9; }
+    .reveal .platform-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8em; }
+    .reveal .platform-card { background: #f0f4f8; padding: 0.8em; border-radius: 8px; text-align: center; }
+    .reveal .platform-icon { font-size: 1.5em; margin-bottom: 0.3em; }
+    .reveal .platform-name { font-weight: 600; color: var(--navy); font-size: 0.75em; }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Slide 1: Title -->
+      <section class="center">
+        <div class="logo-container">
+          <div class="logo">DIL</div>
+        </div>
+        <h1 class="navy">TradeBridge <span class="highlight">Connect</span></h1>
+        <p class="navy-light">Business Networking & Trade Matching Platform</p>
+        <p style="font-size: 0.7em; margin-top: 2em; color: #666;">
+          Connecting African Businesses to Global Markets
+        </p>
+      </section>
+
+      <!-- Slide 2: The Problem -->
+      <section>
+        <h3>The <span class="gold">Challenge</span></h3>
+        <div class="slide-content">
+          <ul>
+            <li>African businesses struggle to find verified international buyers</li>
+            <li>Traditional trade fairs are expensive and time-consuming</li>
+            <li>No reliable way to verify trade readiness of partners</li>
+            <li>Lack of trust in cross-border transactions</li>
+            <li>Limited access to market intelligence and trade insights</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Slide 3: Our Solution -->
+      <section>
+        <h3>Our <span class="gold">Solution</span></h3>
+        <div class="slide-content">
+          <p>A comprehensive digital platform that connects verified African exporters with international buyers through:</p>
+          <ul style="margin-top: 1em;">
+            <li><strong>AI-Powered Matchmaking</strong> — Smart algorithms match businesses based on sector, capacity, and intent</li>
+            <li><strong>Business Verification (KYC)</strong> — Multi-tier CAC document verification</li>
+            <li><strong>Deal Room & Escrow</strong> — Secure trade execution with milestone payments</li>
+            <li><strong>Trade Intelligence</strong> — Real-time market insights and analytics</li>
+            <li><strong>AI Trade Advisor</strong> — AI-powered assistant for trade guidance</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Slide 4: Key Stats -->
+      <section>
+        <h3>Platform <span class="gold">Impact</span></h3>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-value">500+</div>
+            <div class="stat-label">Registered Businesses</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value">1,200+</div>
+            <div class="stat-label">Trade Matches Made</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value">15</div>
+            <div class="stat-label">Countries Connected</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value">24</div>
+            <div class="stat-label">Events Hosted</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 5: About DIL -->
+      <section>
+        <h3>About <span class="gold">Dauno Integrated Ltd</span></h3>
+        <div class="slide-content">
+          <ul>
+            <li>Transnational company incorporated in Abuja, Nigeria (RC: 1963419)</li>
+            <li>Special focus on <strong>Business Re-engineering & Trade Promotion</strong></li>
+            <li>Expertise across the <strong>Nigeria–Italy trade corridor</strong> and beyond</li>
+            <li>Strong network with key institutions:
+              <ul>
+                <li>Nigerian Export Promotion Council</li>
+                <li>Confindustria & Treviso Chamber of Commerce</li>
+                <li>ECOWAS Commission & African Development Bank</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Slide 6: Services -->
+      <section>
+        <h3>Our <span class="gold">Services</span></h3>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-title">International Trade Promotions</div>
+            <div class="feature-desc">Global footprint expansion through structured trade facilitation</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Trade Meetings & Delegations</div>
+            <div class="feature-desc">Curated meetings connecting producers with international buyers</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Business Matchmaking</div>
+            <div class="feature-desc">AI-powered matching based on sector, capacity, and intent</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Multilateral Cooperation</div>
+            <div class="feature-desc">Business development and strategic partnership frameworks</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 7: How It Works -->
+      <section>
+        <h3>How It <span class="gold">Works</span></h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-icon">1</div>
+            <div class="feature-title">Register & Verify</div>
+            <div class="feature-desc">Create profile, complete KYC verification</div>
+          </div>
+          <div class="step">
+            <div class="step-icon">2</div>
+            <div class="feature-title">Build Trade Profile</div>
+            <div class="feature-desc">Add products, certifications, export history</div>
+          </div>
+          <div class="step">
+            <div class="step-icon">3</div>
+            <div class="feature-title">Get Matched</div>
+            <div class="feature-desc">AI computes compatibility scores</div>
+          </div>
+          <div class="step">
+            <div class="step-icon">4</div>
+            <div class="feature-title">Trade & Grow</div>
+            <div class="feature-desc">Deal room with secure escrow payments</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 8: Platform Features Overview -->
+      <section>
+        <h3>Platform <span class="gold">Modules</span></h3>
+        <div class="platform-grid">
+          <div class="platform-card">
+            <div class="platform-icon">🏢</div>
+            <div class="platform-name">Business Directory</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-icon">🤝</div>
+            <div class="platform-name">Trade Matchmaking</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-icon">📅</div>
+            <div class="platform-name">Events & Delegations</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-icon">🛡️</div>
+            <div class="platform-name">KYC Verification</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-icon">📊</div>
+            <div class="platform-name">Trade Intelligence</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-icon">🤖</div>
+            <div class="platform-name">AI Trade Advisor</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-icon">💼</div>
+            <div class="platform-name">Deal Room</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-icon">💰</div>
+            <div class="platform-name">Escrow Payments</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-icon">⚠️</div>
+            <div class="platform-name">Dispute Resolution</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-icon">📧</div>
+            <div class="platform-name">Marketing Automation</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-icon">📈</div>
+            <div class="platform-name">Member Dashboard</div>
+          </div>
+          <div class="platform-card">
+            <div class="platform-icon">⚙️</div>
+            <div class="platform-name">Admin Panel</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 9: KYC Verification -->
+      <section>
+        <h3>KYC <span class="gold">Verification</span></h3>
+        <div class="slide-content">
+          <p>Multi-tier verification system to build trust in the marketplace:</p>
+          <ul style="margin-top: 1em;">
+            <li><strong>Basic Tier</strong> — Email & phone verification, basic business info</li>
+            <li><strong>Verified Tier</strong> — CAC documents, director ID verification</li>
+            <li><strong>Premium Tier</strong> — Bank reference, trade reference checks</li>
+            <li>Admin queue for manual review of applications</li>
+            <li>Real-time verification status tracking</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Slide 10: Trade Intelligence -->
+      <section>
+        <h3>Trade <span class="gold">Intelligence</span></h3>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-title">Market Analytics</div>
+            <div class="feature-desc">Real-time trade volume trends and sector distribution</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Trade Flows</div>
+            <div class="feature-desc">Cross-border trade data between countries</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Country Intelligence</div>
+            <div class="feature-desc">Export/import data, growth rates, risk scores</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Intelligence Alerts</div>
+            <div class="feature-desc">AI-powered alerts for opportunities and risks</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 11: AI Trade Advisor -->
+      <section>
+        <h3>AI Trade <span class="gold">Advisor</span></h3>
+        <div class="slide-content">
+          <p>AI-powered intelligent assistant for trade guidance:</p>
+          <ul style="margin-top: 1em;">
+            <li><strong>Chat Interface</strong> — Ask questions about trade opportunities</li>
+            <li><strong>Market Data</strong> — Real-time commodity prices and trends</li>
+            <li><strong>Trade Insights</strong> — AI-generated opportunities and risk alerts</li>
+            <li><strong>Deal Guidance</strong> — Escrow process and documentation help</li>
+            <li><strong>Quick Replies</strong> — Pre-built queries for common questions</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Slide 12: Deal Room -->
+      <section>
+        <h3>Deal <span class="gold">Room</span></h3>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-title">Deal Management</div>
+            <div class="feature-desc">Create and manage trade deals with counterparties</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Milestones</div>
+            <div class="feature-desc">Track deal progress with milestone-based payments</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Secure Escrow</div>
+            <div class="feature-desc">Protected funds with commission-based release</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Documents</div>
+            <div class="feature-desc">Upload and share deal-related documents</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 13: Dispute Resolution -->
+      <section>
+        <h3>Dispute <span class="gold">Resolution</span></h3>
+        <div class="slide-content">
+          <ul>
+            <li>Structured dispute creation linked to specific deals</li>
+            <li><strong>Categories:</strong> Fulfillment, Payment, Quality, Documentation, Other</li>
+            <li>Status tracking: Open, Under Review, Resolved, Escalated</li>
+            <li>Evidence submission and resolution timeline</li>
+            <li>Admin mediation workflow for fair resolution</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Slide 14: Marketing Automation -->
+      <section>
+        <h3>Marketing <span class="gold">Automation</span></h3>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-title">Email Campaigns</div>
+            <div class="feature-desc">Design, schedule, and send email campaigns</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Automated Workflows</div>
+            <div class="feature-desc">Trigger-based automation (signup, upgrade, events)</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Email Templates</div>
+            <div class="feature-desc">Reusable templates with variable support</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Audience Segments</div>
+            <div class="feature-desc">Target specific member groups (free, paid, verified)</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 15: Target Sectors -->
+      <section>
+        <h3>Target <span class="gold">Sectors</span></h3>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-title">Agriculture</div>
+            <div class="feature-desc">Cocoa, coffee, sesame, palm oil, grains</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Textiles & Fashion</div>
+            <div class="feature-desc">African fabrics, garments, fashion accessories</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Manufacturing</div>
+            <div class="feature-desc">Industrial equipment, construction materials</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Logistics</div>
+            <div class="feature-desc">Shipping, freight forwarding, supply chain</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 16: Recent News -->
+      <section>
+        <h3>Recent <span class="gold">Achievements</span></h3>
+        <div class="slide-content">
+          <ul>
+            <li><strong>Nigeria-Italy Economic Pact</strong> — Historic agreement signed in Attigliano (Dec 2025)</li>
+            <li><strong>Innovation & Technology Forum</strong> — DIL facilitated Nigeria-Italy cooperation (March 2025)</li>
+            <li><strong>Business Mission to Confindustria</strong> — Trade delegation to Reggio Calabria (July 2023)</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Slide 17: Testimonials -->
+      <section>
+        <h3>What Partners <span class="gold">Say</span></h3>
+        <div class="slide-content" style="font-style: italic;">
+          <p style="background: #f8f9fa; padding: 1em; border-left: 4px solid var(--gold); margin-bottom: 1em;">
+            "DIL's trade platform connected us with three major Italian buyers within our first month."
+            <br><strong>— Chief Ade Ogunleye, CEO, Lagos Agro Exports Ltd</strong>
+          </p>
+          <p style="background: #f8f9fa; padding: 1em; border-left: 4px solid var(--gold);">
+            "The trade delegation to Treviso was professionally managed. We signed two MOUs."
+            <br><strong>— Kwame Asante, Director, Accra Textiles Co.</strong>
+          </p>
+        </div>
+      </section>
+
+      <!-- Slide 18: Tech Stack -->
+      <section>
+        <h3>Technology <span class="gold">Stack</span></h3>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-title">Frontend</div>
+            <div class="feature-desc">React, TypeScript, Vite</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">UI Framework</div>
+            <div class="feature-desc">shadcn-ui, Tailwind CSS</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Routing</div>
+            <div class="feature-desc">React Router v6</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Deployment</div>
+            <div class="feature-desc">Vercel (CI/CD from GitHub)</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 19: Membership Plans -->
+      <section>
+        <h3>Membership <span class="gold">Plans</span></h3>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-title">Free</div>
+            <div class="feature-desc">Basic directory, limited matches</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Standard</div>
+            <div class="feature-desc">Full directory, priority matching, events</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Premium</div>
+            <div class="feature-desc">Verified badge, deal room, AI advisor</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-title">Enterprise</div>
+            <div class="feature-desc">Custom solutions, dedicated support</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 20: Competitive Advantage -->
+      <section>
+        <h3>Competitive <span class="gold">Advantage</span></h3>
+        <div class="slide-content">
+          <ul>
+            <li><strong>Verified Businesses</strong> — Multi-tier KYC verification builds trust</li>
+            <li><strong>Secure Transactions</strong> — Escrow-protected payments</li>
+            <li><strong>AI-Powered</strong> — Matchmaking, advisor, and intelligence</li>
+            <li><strong>End-to-End</strong> — From discovery to dispute resolution</li>
+            <li><strong>Strong Network</strong> — Established Italian and African partnerships</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Slide 21: Market Opportunity -->
+      <section>
+        <h3>Market <span class="gold">Opportunity</span></h3>
+        <div class="slide-content">
+          <ul>
+            <li>Africa's trade volume growing rapidly with global markets</li>
+            <li>Nigeria as Africa's largest economy ($450B+ GDP)</li>
+            <li>Italy seeking alternative supply chains beyond China</li>
+            <li>Huge demand for verified African products in Europe</li>
+            <li>Digital transformation accelerating post-pandemic</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Slide 22: Partnership Model -->
+      <section>
+        <h3>Partnership <span class="gold">Model</span></h3>
+        <div class="slide-content">
+          <ul>
+            <li><strong>Channel Partners</strong> — Resell platform access in your region</li>
+            <li><strong>Institutional Partners</strong> — Co-host events and trade missions</li>
+            <li><strong>Corporate Partners</strong> — Connect supply chains through platform</li>
+            <li><strong>Government Partnerships</strong> — National trade promotion collaborations</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Slide 23: Call to Action -->
+      <section class="center">
+        <div class="cta-box">
+          <h3 style="color: white;">Ready to <span style="color: var(--gold);">Expand Your Trade Network?</span></h3>
+          <p>Join the DIL Global Trade Platform today</p>
+          <div style="margin-top: 1.5em;">
+            <a href="#" style="background: var(--gold); color: var(--navy); padding: 0.8em 1.5em; border-radius: 6px; text-decoration: none; font-weight: 600; margin-right: 1em;">Register Now</a>
+            <a href="#" style="border: 2px solid white; color: white; padding: 0.8em 1.5em; border-radius: 6px; text-decoration: none;">Contact Us</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 24: Contact -->
+      <section class="center">
+        <h3>Let's <span class="gold">Connect</span></h3>
+        <div class="slide-content" style="text-align: center;">
+          <p><strong>Dauno Integrated Ltd</strong></p>
+          <p>Transnational Company | RC: 1963419</p>
+          <p>Abuja, Nigeria</p>
+          <p style="margin-top: 1em;">info@daunointegrated.com</p>
+          <p>www.daunointegrated.com</p>
+        </div>
+      </section>
+
+      <!-- Slide 25: Thank You -->
+      <section class="center">
+        <div class="logo-container">
+          <div class="logo">DIL</div>
+        </div>
+        <h1 class="navy">Thank <span class="highlight">You</span></h1>
+        <p class="navy-light">Questions?</p>
+      </section>
+
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+      transition: 'slide',
+      backgroundTransition: 'fade'
+    });
+  </script>
+</body>
+</html>
