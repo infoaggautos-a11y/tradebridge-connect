@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from '@/components/NavLink';
-import { Globe, LayoutDashboard, Building2, Users, CalendarDays, CreditCard, User, LogOut } from 'lucide-react';
+import { Globe, LayoutDashboard, Building2, Users, CalendarDays, CreditCard, User, LogOut, Bot, BarChart3, Shield, Scale, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -14,6 +14,11 @@ const memberLinks = [
   { title: 'Directory', url: '/directory', icon: Building2 },
   { title: 'My Matches', url: '/matches', icon: Users },
   { title: 'Events', url: '/events', icon: CalendarDays },
+  { title: 'AI Advisor', url: '/advisor', icon: Bot },
+  { title: 'Intelligence', url: '/intelligence', icon: BarChart3 },
+  { title: 'My Deals', url: '/deals', icon: Package },
+  { title: 'Verification', url: '/verification', icon: Shield },
+  { title: 'Disputes', url: '/disputes', icon: Scale },
   { title: 'Subscription', url: '/subscription', icon: CreditCard },
   { title: 'Profile', url: '/profile', icon: User },
 ];
