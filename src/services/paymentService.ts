@@ -1,3 +1,4 @@
+import Stripe from 'stripe';
 import {
   Payment,
   PaymentMethod,
@@ -12,37 +13,15 @@ import {
 const generateId = () => `pay_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 const generateReference = () => `DIL-${Date.now().toString(36).toUpperCase()}`;
 
-const mockPayments: Payment[] = [];
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 
-const mockPaymentMethods: PaymentMethod[] = [
-  {
-    id: 'pm_001',
-    userId: 'user_001',
-    type: 'card',
-    provider: 'stripe',
-    isDefault: true,
-    isVerified: true,
-    cardLast4: '4242',
-    cardBrand: 'visa',
-    expiryMonth: 12,
-    expiryYear: 2027,
-    cardHolderName: 'John Doe',
-    createdAt: '2026-01-01T00:00:00Z',
-  },
-  {
-    id: 'pm_002',
-    userId: 'user_001',
-    type: 'bank_transfer',
-    provider: 'paystack',
-    isDefault: true,
-    isVerified: true,
-    bankName: 'First Bank of Nigeria',
-    accountNumber: '1234567890',
-    accountHolderName: 'DIL Business Services Ltd',
-    routingNumber: '011151515',
-    createdAt: '2026-01-15T00:00:00Z',
-  },
-];
+const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY, {
+  apiVersion: '2026-02-25.clover',
+}) : null;
+
+const mockPayments: Payment[] = [];
+const mockPaymentMethods: PaymentMethod[] = [];
 
 export interface StripeConfig {
   publishableKey: string;
@@ -64,36 +43,23 @@ export interface PaymentGatewayConfig {
 
 class PaymentService {
   private config: PaymentGatewayConfig | null = null;
-  private stripe: any = null;
-  private paystack: any = null;
 
   initialize(config: PaymentGatewayConfig): void {
     this.config = config;
-    if (typeof window !== 'undefined') {
-      this.loadStripe();
-    }
   }
 
-  private async loadStripe(): Promise<void> {
-    if (typeof window === 'undefined' || !this.config) return;
-    
-    try {
-      const { loadStripe } = await import('@stripe/stripe-js');
-      this.stripe = await loadStripe(this.config.stripe.publishableKey);
-    } catch (error) {
-      console.error('Failed to load Stripe:', error);
-    }
+  getStripePublishableKey(): string {
+    return this.config?.stripe.publishableKey || '';
   }
 
   async createPaymentIntent(params: CreatePaymentParams): Promise<PaymentIntent> {
     const { amount, currency, userId, metadata } = params;
-    
     const intentId = generateId();
     const reference = generateReference();
     
     let clientSecret: string;
-    
-    if (params.provider === 'stripe') {
+
+    if (params.provider === 'stripe' && stripe) {
       clientSecret = await this.createStripePaymentIntent(amount, currency, reference, metadata);
     } else if (params.provider === 'paystack') {
       clientSecret = await this.createPaystackPaymentIntent(amount, currency, reference, metadata);
@@ -118,27 +84,27 @@ class PaymentService {
     reference: string,
     metadata?: Record<string, any>
   ): Promise<string> {
-    if (!this.config) {
+    if (!stripe) {
+      console.warn('Stripe not configured, using mock');
       return `stripe_pi_mock_${reference}`;
     }
-    
+
     try {
-      const response = await fetch('/api/payments/stripe/create-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: Math.round(amount * 100),
-          currency: currency.toLowerCase(),
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100),
+        currency: currency.toLowerCase(),
+        metadata: {
+          ...metadata,
           reference,
-          metadata,
-        }),
+        },
+        automatic_payment_methods: {
+          enabled: true,
+        },
       });
-      
-      const data = await response.json();
-      return data.clientSecret;
+      return paymentIntent.client_secret!;
     } catch (error) {
       console.error('Stripe createPaymentIntent error:', error);
-      return `stripe_pi_mock_${reference}`;
+      throw error;
     }
   }
 
@@ -148,14 +114,13 @@ class PaymentService {
     reference: string,
     metadata?: Record<string, any>
   ): Promise<string> {
-    if (!this.config) {
-      return `paystack_ps_mock_${reference}`;
-    }
-    
     try {
-      const response = await fetch('/api/payments/paystack/initialize', {
+      const response = await fetch('https://api.paystack.co/transaction/initialize', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        },
         body: JSON.stringify({
           amount: Math.round(amount * 100),
           currency,
@@ -165,10 +130,13 @@ class PaymentService {
       });
       
       const data = await response.json();
-      return data.data.accessCode;
+      if (!data.status) {
+        throw new Error(data.message);
+      }
+      return data.data.access_code;
     } catch (error) {
       console.error('Paystack initialize error:', error);
-      return `paystack_ps_mock_${reference}`;
+      throw error;
     }
   }
 
@@ -185,6 +153,7 @@ class PaymentService {
       amount: 0,
       currency: 'USD',
       provider,
+      type: 'wallet_topup',
       status: 'processing',
       reference: generateReference(),
       description: 'Payment confirmed',
@@ -207,17 +176,14 @@ class PaymentService {
     return payment;
   }
 
-  private async confirmStripePayment(paymentIntentId: string, paymentMethodId: string): Promise<boolean> {
-    if (!this.stripe) {
+  private async confirmStripePayment(paymentIntentId: string, _paymentMethodId: string): Promise<boolean> {
+    if (!stripe) {
       return true;
     }
 
     try {
-      const { error, paymentIntent } = await this.stripe.confirmCardPayment(paymentIntentId, {
-        payment_method: paymentMethodId,
-      });
-      
-      return !error && paymentIntent?.status === 'succeeded';
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      return paymentIntent.status === 'succeeded';
     } catch (error) {
       console.error('Stripe confirmPayment error:', error);
       return false;
@@ -226,12 +192,16 @@ class PaymentService {
 
   private async verifyPaystackPayment(reference: string): Promise<boolean> {
     try {
-      const response = await fetch(`/api/payments/paystack/verify/${reference}`);
+      const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+        headers: {
+          'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        },
+      });
       const data = await response.json();
       return data.data?.status === 'success';
     } catch (error) {
       console.error('Paystack verifyPayment error:', error);
-      return true;
+      return false;
     }
   }
 
@@ -246,14 +216,14 @@ class PaymentService {
       cardLast4: details.cardNumber.slice(-4),
       cardBrand: this.detectCardBrand(details.cardNumber),
       expiryMonth: details.expiryMonth,
-      expiryYear: details.expiryYear,
+      expiryYear: details.expiryYear.toString(),
       cardHolderName: details.cardHolderName,
       createdAt: new Date().toISOString(),
     };
 
     let verified = false;
     
-    if (details.provider === 'stripe') {
+    if (details.provider === 'stripe' && stripe) {
       verified = await this.verifyStripeCard(details);
     } else if (details.provider === 'paystack') {
       verified = await this.verifyPaystackCard(details);
@@ -277,40 +247,45 @@ class PaymentService {
   }
 
   private async verifyStripeCard(details: CardDetails): Promise<boolean> {
+    if (!stripe) return true;
+    
     try {
-      const response = await fetch('/api/payments/stripe/verify-card', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cardNumber: details.cardNumber,
-          expiryMonth: details.expiryMonth,
-          expiryYear: details.expiryYear,
-        }),
+      const paymentMethod = await stripe.paymentMethods.create({
+        type: 'card',
+        card: {
+          number: details.cardNumber,
+          exp_month: details.expiryMonth,
+          exp_year: details.expiryYear,
+          cvc: details.cvv,
+        },
       });
-      
-      const data = await response.json();
-      return data.valid;
+      return !!paymentMethod.id;
     } catch {
-      return true;
+      return false;
     }
   }
 
   private async verifyPaystackCard(details: CardDetails): Promise<boolean> {
     try {
-      const response = await fetch('/api/payments/paystack/check-card', {
+      const response = await fetch('https://api.paystack.co/sdk/tokenization', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.PAYSTACK_PUBLIC_KEY}`,
+        },
         body: JSON.stringify({
-          cardNumber: details.cardNumber,
-          expiryMonth: details.expiryMonth,
-          expiryYear: details.expiryYear,
+          card: {
+            number: details.cardNumber,
+            cvv: details.cvv,
+            expiry_month: details.expiryMonth,
+            expiry_year: details.expiryYear,
+          },
         }),
       });
-      
       const data = await response.json();
-      return data.valid;
+      return data.status;
     } catch {
-      return true;
+      return false;
     }
   }
 
@@ -343,19 +318,21 @@ class PaymentService {
 
   private async verifyPaystackBankAccount(details: BankAccountDetails): Promise<boolean> {
     try {
-      const response = await fetch('/api/payments/paystack/resolve-account', {
+      const response = await fetch('https://api.paystack.co/bank/resolve', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        },
         body: JSON.stringify({
-          accountNumber: details.accountNumber,
-          bankCode: details.routingNumber,
+          account_number: details.accountNumber,
+          bank_code: details.routingNumber,
         }),
       });
-      
       const data = await response.json();
-      return data.valid;
+      return data.status && data.data?.account_name;
     } catch {
-      return true;
+      return false;
     }
   }
 
@@ -377,6 +354,13 @@ class PaymentService {
       throw new Error('Payment not found');
     }
 
+    if (stripe && payment.provider === 'stripe') {
+      await stripe.refunds.create({
+        payment_intent: payment.paymentIntentId,
+        amount: amount ? Math.round(amount * 100) : undefined,
+      });
+    }
+
     payment.status = 'refunded';
     payment.refundedAt = new Date().toISOString();
     if (amount) {
@@ -394,31 +378,41 @@ class PaymentService {
     if (provider === 'stripe') {
       return this.processStripeWebhook(payload, signature);
     } else if (provider === 'paystack') {
-      return this.processPaystackWebhook(payload, signature);
+      return this.processPaystackWebhook(payload);
     }
     
     return { success: false };
   }
 
-  private async processStripeWebhook(payload: any, signature: string): Promise<{ success: boolean; event?: string }> {
-    const eventType = payload.type;
-    
-    switch (eventType) {
-      case 'payment_intent.succeeded':
-        await this.handlePaymentSuccess(payload.data.object.metadata.reference);
-        break;
-      case 'payment_intent.payment_failed':
-        await this.handlePaymentFailure(payload.data.object.metadata.reference);
-        break;
-      case 'charge.refunded':
-        await this.handleRefundSuccess(payload.data.object.metadata.reference);
-        break;
+  private async processStripeWebhook(payload: any, _signature: string): Promise<{ success: boolean; event?: string }> {
+    if (!stripe) {
+      return { success: false };
     }
 
-    return { success: true, event: eventType };
+    try {
+      const event = payload;
+      const eventType = event.type;
+      
+      switch (eventType) {
+        case 'payment_intent.succeeded':
+          await this.handlePaymentSuccess(event.data.object.metadata.reference);
+          break;
+        case 'payment_intent.payment_failed':
+          await this.handlePaymentFailure(event.data.object.metadata.reference);
+          break;
+        case 'charge.refunded':
+          await this.handleRefundSuccess(event.data.object.metadata.reference);
+          break;
+      }
+
+      return { success: true, event: eventType };
+    } catch (error) {
+      console.error('Stripe webhook error:', error);
+      return { success: false };
+    }
   }
 
-  private async processPaystackWebhook(payload: any, signature: string): Promise<{ success: boolean; event?: string }> {
+  private async processPaystackWebhook(payload: any): Promise<{ success: boolean; event?: string }> {
     const event = payload.event;
     
     switch (event) {
@@ -465,6 +459,65 @@ class PaymentService {
       .filter(p => p.userId === userId)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, limit);
+  }
+
+  async createStripeCustomer(email: string, name: string): Promise<string> {
+    if (!stripe) {
+      return `cus_mock_${Date.now()}`;
+    }
+
+    const customer = await stripe.customers.create({
+      email,
+      name,
+    });
+    return customer.id;
+  }
+
+  async attachPaymentMethodToCustomer(customerId: string, paymentMethodId: string): Promise<boolean> {
+    if (!stripe) return true;
+
+    try {
+      await stripe.paymentMethods.attach(paymentMethodId, {
+        customer: customerId,
+      });
+      return true;
+    } catch (error) {
+      console.error('Attach payment method error:', error);
+      return false;
+    }
+  }
+
+  async createStripeSubscription(
+    customerId: string,
+    priceId: string
+  ): Promise<{ subscriptionId: string; status: string }> {
+    if (!stripe) {
+      return { subscriptionId: `sub_mock_${Date.now()}`, status: 'active' };
+    }
+
+    const subscription = await stripe.subscriptions.create({
+      customer: customerId,
+      items: [{ price: priceId }],
+      payment_behavior: 'default_incomplete',
+      expand: ['latest_invoice.payment_intent'],
+    });
+
+    return {
+      subscriptionId: subscription.id,
+      status: subscription.status,
+    };
+  }
+
+  async cancelStripeSubscription(subscriptionId: string): Promise<boolean> {
+    if (!stripe) return true;
+
+    try {
+      await stripe.subscriptions.cancel(subscriptionId);
+      return true;
+    } catch (error) {
+      console.error('Cancel subscription error:', error);
+      return false;
+    }
   }
 }
 
