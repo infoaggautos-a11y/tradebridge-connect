@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from '@/components/NavLink';
-import { Globe, LayoutDashboard, Building2, Users, CalendarDays, CreditCard, Activity, LogOut, Mail, BarChart3, Shield, Scale } from 'lucide-react';
+import { Globe, LayoutDashboard, Building2, Users, CalendarDays, CreditCard, Activity, LogOut, Mail, BarChart3, Shield, Scale, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -17,6 +17,7 @@ const adminLinks = [
   { title: 'Subscriptions', url: '/admin/subscriptions', icon: CreditCard },
   { title: 'KYC Queue', url: '/admin/kyc', icon: Shield },
   { title: 'Disputes', url: '/admin/disputes', icon: Scale },
+  { title: 'Finance', url: '/admin/finance', icon: DollarSign },
   { title: 'Marketing', url: '/admin/marketing', icon: Mail },
   { title: 'Activity Log', url: '/admin/activity', icon: Activity },
 ];

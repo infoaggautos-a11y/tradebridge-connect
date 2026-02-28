@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from '@/components/NavLink';
-import { Globe, LayoutDashboard, Building2, Users, CalendarDays, CreditCard, User, LogOut, Bot, BarChart3, Shield, Scale, Package } from 'lucide-react';
+import { Globe, LayoutDashboard, Building2, Users, CalendarDays, CreditCard, User, LogOut, Bot, BarChart3, Shield, Scale, Package, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -19,6 +19,7 @@ const memberLinks = [
   { title: 'My Deals', url: '/deals', icon: Package },
   { title: 'Verification', url: '/verification', icon: Shield },
   { title: 'Disputes', url: '/disputes', icon: Scale },
+  { title: 'Wallet', url: '/wallet', icon: Wallet },
   { title: 'Subscription', url: '/subscription', icon: CreditCard },
   { title: 'Profile', url: '/profile', icon: User },
 ];
