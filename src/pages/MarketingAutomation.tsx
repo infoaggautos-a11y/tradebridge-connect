@@ -34,11 +34,11 @@ export default function MarketingAutomation() {
   );
 
   const getStatusBadge = (status: CampaignStatus) => {
-    const variants: Record<CampaignStatus, 'secondary' | 'outline' | 'default' | 'warning'> = {
+    const variants: Record<CampaignStatus, 'secondary' | 'outline' | 'default' | 'destructive'> = {
       draft: 'secondary',
       scheduled: 'outline',
       active: 'default',
-      paused: 'warning',
+      paused: 'destructive',
       completed: 'secondary',
     };
     return <Badge variant={variants[status]}>{status}</Badge>;

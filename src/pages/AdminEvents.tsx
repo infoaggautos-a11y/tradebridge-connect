@@ -31,9 +31,9 @@ const mockDelegations: Delegation[] = [
     leader: 'Marco Bianchi',
     country: 'Italy',
     members: [
-      { id: 'm1', name: 'Giulia Romano', role: 'Trade Attaché', company: 'Italian Embassy' },
-      { id: 'm2', name: 'Roberto Verdi', role: 'CEO', company: 'AgriChain Italia' },
-      { id: 'm3', name: 'Sofia Ferrari', role: 'Export Manager', company: 'Milano Foods' },
+      { id: 'm1', name: 'Giulia Romano', role: 'Trade Attaché', company: 'Italian Embassy', email: 'giulia@embassy.it' },
+      { id: 'm2', name: 'Roberto Verdi', role: 'CEO', company: 'AgriChain Italia', email: 'roberto@agrichain.it' },
+      { id: 'm3', name: 'Sofia Ferrari', role: 'Export Manager', company: 'Milano Foods', email: 'sofia@milanofoods.it' },
     ],
     status: 'confirmed',
     arrivalDate: '2026-04-14',
@@ -47,8 +47,8 @@ const mockDelegations: Delegation[] = [
     leader: 'Chief Ade Ogunleye',
     country: 'Nigeria',
     members: [
-      { id: 'm4', name: 'Dr. Amara Osei', role: 'Director', company: 'NEPC' },
-      { id: 'm5', name: 'Emeka Okonkwo', role: 'CEO', company: 'Lagos Agro Exports' },
+      { id: 'm4', name: 'Dr. Amara Osei', role: 'Director', company: 'NEPC', email: 'amara@nepc.gov.ng' },
+      { id: 'm5', name: 'Emeka Okonkwo', role: 'CEO', company: 'Lagos Agro Exports', email: 'emeka@lagosagroexports.ng' },
     ],
     status: 'confirmed',
     arrivalDate: '2026-04-14',
