@@ -28,6 +28,9 @@ export type EvidenceType =
   | 'payment_receipt'
   | 'communication_logs'
   | 'photos'
+  | 'bank_statement'
+  | 'business_registration'
+  | 'government_id'
   | 'other';
 
 export interface DisputeEvidence {

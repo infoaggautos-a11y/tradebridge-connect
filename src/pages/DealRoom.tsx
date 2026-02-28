@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getBusinessById, businesses } from '@/data/mockData';
 import { dealService } from '@/services/dealService';
 import { DealStatus, DealMilestone, DEAL_STATUS_LABELS, ESCROW_STATUS_LABELS } from '@/types/deal';
+import { Dispute } from '@/types/dispute';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

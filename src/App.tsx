@@ -32,6 +32,12 @@ import TradeIntelligence from "./pages/TradeIntelligence";
 import MarketingAutomation from "./pages/MarketingAutomation";
 import FinanceDashboard from "./pages/FinanceDashboard";
 import Wallet from "./pages/Wallet";
+import AboutUs from "./pages/AboutUs";
+import OurServices from "./pages/OurServices";
+import PartnersPage from "./pages/Partners";
+import ContactUs from "./pages/ContactUs";
+import NewsEvents from "./pages/NewsEvents";
+import TrainingProgrammes from "./pages/TrainingProgrammes";
 
 const queryClient = new QueryClient();
 
@@ -46,12 +52,18 @@ const App = () => (
             {/* Public */}
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/services" element={<OurServices />} />
+            <Route path="/partners" element={<PartnersPage />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/news" element={<NewsEvents />} />
+            <Route path="/training" element={<TrainingProgrammes />} />
             <Route path="/directory" element={<Directory />} />
             <Route path="/directory/:id" element={<BusinessProfile />} />
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<EventDetail />} />
             <Route path="/membership" element={<Membership />} />
-{/* Member */}
+            {/* Member */}
             <Route path="/dashboard" element={<MemberDashboard />} />
             <Route path="/matches" element={<TradeMatch />} />
             <Route path="/subscription" element={<Subscription />} />
@@ -67,7 +79,7 @@ const App = () => (
             <Route path="/admin/businesses" element={<AdminBusinesses />} />
             <Route path="/admin/events" element={<AdminEvents />} />
             <Route path="/admin/matches" element={<AdminMatches />} />
-<Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
+            <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
             <Route path="/admin/activity" element={<AdminActivity />} />
             <Route path="/admin/kyc" element={<AdminKYCQueue />} />
             <Route path="/admin/disputes" element={<AdminDisputes />} />
