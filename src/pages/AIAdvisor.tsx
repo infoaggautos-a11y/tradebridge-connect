@@ -10,7 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { MemberLayout } from '@/layouts/MemberLayout';
 import { AdvisorMessage, TradeInsight } from '@/types/advisor';
-import { sendMessageToAdvisor, getTradeInsights, getQuickReplies, getMarketData, MarketData } from '@/services/advisorService';
+import { sendMessageToAdvisor, getTradeInsights, getQuickReplies, getMarketData } from '@/services/advisorService';
+import { MarketData } from '@/types/advisor';
 import { useAuth } from '@/contexts/AuthContext';
 import { businesses } from '@/data/mockData';
 

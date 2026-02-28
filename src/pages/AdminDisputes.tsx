@@ -200,8 +200,8 @@ export default function AdminDisputes() {
               <TableBody>
                 {filteredDisputes.map(dispute => {
                   const deal = dealService.getDeal(dispute.dealId);
-                  const buyer = getBusinessById(dispute.buyerId);
-                  const seller = getBusinessById(dispute.sellerId);
+                  const buyer = getBusinessById(dispute.initiatorId);
+                  const seller = getBusinessById(dispute.respondentId);
                   const slaStatus = getSLAStatus(dispute);
                   
                   return (

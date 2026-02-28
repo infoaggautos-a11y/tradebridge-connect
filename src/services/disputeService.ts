@@ -124,7 +124,7 @@ const mockDisputes: Dispute[] = [
         id: 'ev_004',
         disputeId: 'disp_003',
         submittedBy: 'b8',
-        type: 'business_registration',
+        type: 'business_registration' as const,
         description: 'Registration documents obtained showing different directors than claimed',
         submittedAt: '2026-02-10T11:00:00Z',
       },
