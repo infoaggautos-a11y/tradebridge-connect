@@ -363,19 +363,27 @@ export default function WalletPage() {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="font-medium text-blue-800 mb-2">Bank Transfer Details</h4>
+                <h4 className="font-medium text-blue-800 mb-2">Bank Transfer Details (EUR/USD)</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-blue-600">Bank Name:</span>
-                    <span className="font-medium">First Bank of Nigeria</span>
+                    <span className="font-medium">Revolut Bank UAB</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-blue-600">Account Name:</span>
-                    <span className="font-medium">DIL Trade Platform Ltd</span>
+                    <span className="font-medium">Interconsult DI Okorokwo Nkiruka</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-blue-600">Account Number:</span>
-                    <span className="font-medium">3018294521</span>
+                    <span className="text-blue-600">IBAN:</span>
+                    <span className="font-medium">LT39 3250 0376 9399 5279</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-600">SWIFT (EUR):</span>
+                    <span className="font-medium">REVOLT21</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-600">SWIFT (USD):</span>
+                    <span className="font-medium">CHASDEFX</span>
                   </div>
                 </div>
               </div>
