@@ -110,5 +110,5 @@ export const getPlanFeatureLimit = (plan: SubscriptionPlan, feature: keyof Subsc
 export const isPlanLimitReached = (plan: SubscriptionPlan, feature: keyof SubscriptionPlan['limits'], used: number): boolean => {
   const limit = plan.limits[feature];
   if (limit === -1) return false;
-  return used >= limit;
+  return used >= Number(limit);
 };
