@@ -138,5 +138,5 @@ export default async function handler(req: Request) {
 }
 
 export const config = {
-  runtime: 'nodejs',
+  runtime: 'nodejs18.x',
 };
