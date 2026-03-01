@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String        @id @default(cuid())
+  email               String        @unique
+  name                String?
+  passwordHash        String?
+  membershipTier      String        @default("free")
+  stripeCustomerId    String?
+  paystackCustomerId  String?
+  kycStatus           String        @default("pending")
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  
+  subscriptions       Subscription[]
+  payments            Payment[]
+  wallets             Wallet[]
+  payouts             Payout[]
+}
+
+model Subscription {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id])
+  planId               String
+  planName             String
+  status               String    @default("active")
+  stripeSubscriptionId String?
+  paystackSubCode      String?
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd   Boolean   @default(false)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+model Payment {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  amount            Int
+  currency          String
+  status            String    @default("pending")
+  type              String
+  provider          String
+  reference         String    @unique
+  stripePaymentId   String?
+  paystackRef       String?
+  metadata          Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Wallet {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  type              String    @default("main")
+  currency          String    @default("USD")
+  balance           Int       @default(0)
+  pendingBalance    Int       @default(0)
+  availableBalance  Int       @default(0)
+  status            String    @default("active")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  transactions      WalletTransaction[]
+  payouts           Payout[]
+}
+
+model WalletTransaction {
+  id          String    @id @default(cuid())
+  walletId    String
+  wallet      Wallet    @relation(fields: [walletId], references: [id])
+  type        String
+  amount      Int
+  balanceAfter Int
+  reference   String?
+  description String?
+  status      String    @default("completed")
+  createdAt   DateTime  @default(now())
+}
+
+model Payout {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  walletId        String
+  wallet          Wallet    @relation(fields: [walletId], references: [id])
+  amount          Int
+  currency        String
+  status          String    @default("pending")
+  reference       String    @unique
+  provider        String?
+  providerRef     String?
+  failureReason   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model PlatformRevenue {
+  id          String    @id @default(cuid())
+  source      String
+  amount      Int
+  currency    String
+  reference   String?
+  createdAt   DateTime  @default(now())
+}
