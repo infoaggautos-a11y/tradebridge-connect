@@ -11,8 +11,9 @@ import { ArrowUp, ArrowDown, CreditCard, Loader2, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { API_URL, STRIPE_PUBLISHABLE_KEY } from '@/config/api';
 
-const stripePromise = loadStripe('pk_test_51T5TpVEPAQKb2xdh9mGnFrkFGBjOEx35NuiHGmtxdWorfG78VQnuI42TpWlVd0Han0WghsDNvbee8si2ytjA3HE700BOjt48PT');
+const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 const PLAN_PRICES: Record<string, { priceId: string; amount: number }> = {
   starter: { priceId: 'price_starter', amount: 4900 },
@@ -91,7 +92,7 @@ export default function SubscriptionPage() {
     setLoadingPlan(plan.tier);
 
     try {
-      const response = await fetch('http://localhost:3001/api/payments/stripe/create-subscription', {
+      const response = await fetch(`${API_URL}/api/subscriptions/stripe/create-subscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
