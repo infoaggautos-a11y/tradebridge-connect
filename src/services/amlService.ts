@@ -114,7 +114,7 @@ class AMLService {
       checkedAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
       details: {
-        name,
+        individualName: name,
         dateOfBirth,
         country,
         address,

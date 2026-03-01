@@ -20,10 +20,15 @@ import {
   sectorReports, intelligenceAlerts, getMonthlyTradeData, getSectorDistribution 
 } from '@/services/intelligenceService';
 import { IntelligenceAlert } from '@/types/intelligence';
+import { useAuth } from '@/contexts/AuthContext';
+import { hasPlanAccess, INTELLIGENCE_LEVEL } from '@/lib/planAccess';
 
 export default function TradeIntelligence() {
+  const { user } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [selectedCountry, setSelectedCountry] = useState('all');
+  const hasFullAccess = hasPlanAccess(user?.membershipTier, 'growth');
+  const intelligenceLevel = INTELLIGENCE_LEVEL[user?.membershipTier || 'free'];
   
   const monthlyData = getMonthlyTradeData();
   const sectorData = getSectorDistribution();
@@ -66,6 +71,9 @@ export default function TradeIntelligence() {
           </div>
         </div>
         <div className="flex gap-2">
+          <Badge variant="outline" className="hidden md:inline-flex">
+            {intelligenceLevel === 'basic' ? 'Basic intelligence' : intelligenceLevel === 'full' ? 'Full intelligence' : 'Custom intelligence'}
+          </Badge>
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
             <SelectTrigger className="w-[150px]">
               <SelectValue />
@@ -106,10 +114,17 @@ export default function TradeIntelligence() {
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="flows">Trade Flows</TabsTrigger>
-          <TabsTrigger value="sectors">Sectors</TabsTrigger>
+          <TabsTrigger value="flows" disabled={!hasFullAccess}>Trade Flows</TabsTrigger>
+          <TabsTrigger value="sectors" disabled={!hasFullAccess}>Sectors</TabsTrigger>
           <TabsTrigger value="countries">Countries</TabsTrigger>
         </TabsList>
+        {!hasFullAccess && (
+          <Card className="border-gold/30 bg-gold/5">
+            <CardContent className="p-4 text-sm">
+              You are on Basic Trade Intelligence. Upgrade to Business for full sector and trade-flow analytics.
+            </CardContent>
+          </Card>
+        )}
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -199,6 +214,10 @@ export default function TradeIntelligence() {
         </TabsContent>
 
         <TabsContent value="flows" className="space-y-6">
+          {!hasFullAccess ? (
+            <Card><CardContent className="p-8 text-sm text-muted-foreground">Upgrade to Business to view this section.</CardContent></Card>
+          ) : (
+          <>
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
@@ -239,9 +258,14 @@ export default function TradeIntelligence() {
               </Card>
             ))}
           </div>
+          </>
+          )}
         </TabsContent>
 
         <TabsContent value="sectors" className="space-y-6">
+          {!hasFullAccess ? (
+            <Card><CardContent className="p-8 text-sm text-muted-foreground">Upgrade to Business to view this section.</CardContent></Card>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {sectorReports.map((sector) => (
               <Card key={sector.sector} className="hover:shadow-md transition-shadow">
@@ -296,6 +320,7 @@ export default function TradeIntelligence() {
               </Card>
             ))}
           </div>
+          )}
         </TabsContent>
 
         <TabsContent value="countries" className="space-y-6">

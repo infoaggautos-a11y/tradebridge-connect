@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { body, validationResult } from 'express-validator';
 import { logger } from '../services/logger.js';
 import axios from 'axios';
+import { requirePlan } from '../middleware/planAccess.js';
 
 const router = Router();
 
@@ -113,6 +114,7 @@ router.post('/wallet/deposit',
 );
 
 router.post('/wallet/withdraw',
+  requirePlan('starter'),
   body('userId').isString(),
   body('amount').isInt({ min: 1 }),
   body('bankAccountId').isString(),
@@ -245,6 +247,7 @@ router.post('/bank-accounts',
 // ============== PAYOUT ROUTES ==============
 
 router.post('/payout/create',
+  requirePlan('starter'),
   body('userId').isString(),
   body('amount').isInt({ min: 1 }),
   body('currency').isString(),

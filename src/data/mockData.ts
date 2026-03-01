@@ -57,8 +57,18 @@ export interface TradeEvent {
 export interface MembershipPlan {
   tier: MembershipTier;
   name: string;
+  subtitle: string;
+  monthlyPrice: number;
+  annualMonthlyPrice: number;
+  annualPrice: number;
+  ngnMonthlyPrice?: number;
+  ngnAnnualPrice?: number;
   price: number;
   period: string;
+  annualPeriodLabel?: string;
+  monthlyPeriodLabel?: string;
+  trialAvailable?: boolean;
+  commissionRate: number;
   features: string[];
   highlighted?: boolean;
 }
@@ -307,20 +317,99 @@ export const events: TradeEvent[] = [
 // ===== MEMBERSHIP PLANS =====
 export const membershipPlans: MembershipPlan[] = [
   {
-    tier: 'free', name: 'Free', price: 0, period: 'forever',
-    features: ['Directory listing', '3 match views/month', 'Event browsing', 'Basic profile'],
+    tier: 'free',
+    name: 'Explorer',
+    subtitle: 'Just exploring international trade',
+    monthlyPrice: 0,
+    annualMonthlyPrice: 0,
+    annualPrice: 0,
+    price: 0,
+    period: 'forever',
+    annualPeriodLabel: 'Free forever',
+    monthlyPeriodLabel: 'Free forever',
+    commissionRate: 5,
+    features: [
+      'Directory Profile',
+      '3 match views per month',
+      'Email support',
+    ],
   },
   {
-    tier: 'starter', name: 'Starter', price: 49, period: '/month',
-    features: ['Unlimited match views', 'Priority directory listing', 'Event registration discounts', 'Basic analytics', 'Email support'],
+    tier: 'starter',
+    name: 'Pro',
+    subtitle: 'Actively seeking trade partners',
+    monthlyPrice: 16,
+    annualMonthlyPrice: 13,
+    annualPrice: 156,
+    ngnMonthlyPrice: 20000,
+    ngnAnnualPrice: 156000,
+    price: 13,
+    period: '/month',
+    annualPeriodLabel: '/month billed annually',
+    monthlyPeriodLabel: '/month billed monthly',
+    trialAvailable: true,
+    commissionRate: 4,
+    features: [
+      'Directory Profile',
+      'Unlimited match views',
+      'Deal room access',
+      '2 escrow transactions per month',
+      'Basic trade intelligence',
+      '10% event discount',
+      'Email support',
+    ],
   },
   {
-    tier: 'growth', name: 'Growth', price: 149, period: '/month', highlighted: true,
-    features: ['All Starter features', 'Trade analytics preview', 'Featured profile badge', 'Dedicated matching support', 'Priority event access', 'Monthly trade report'],
+    tier: 'growth',
+    name: 'Business',
+    subtitle: 'Running multiple deals at once',
+    monthlyPrice: 24,
+    annualMonthlyPrice: 19,
+    annualPrice: 228,
+    ngnMonthlyPrice: 28000,
+    ngnAnnualPrice: 216000,
+    price: 19,
+    period: '/month',
+    annualPeriodLabel: '/month billed annually',
+    monthlyPeriodLabel: '/month billed monthly',
+    trialAvailable: true,
+    commissionRate: 3,
+    highlighted: true,
+    features: [
+      'Directory Profile',
+      'Unlimited match views',
+      'Deal room access',
+      'Unlimited escrow transactions',
+      'AI Trade Advisor',
+      'Full trade intelligence',
+      '25% event discount',
+      'Priority support',
+    ],
   },
   {
-    tier: 'enterprise', name: 'Enterprise', price: 499, period: '/month',
-    features: ['All Growth features', 'Dedicated account manager', 'Homepage featured placement', 'Custom trade reports', 'White-glove matching', 'VIP event access', 'API access'],
+    tier: 'enterprise',
+    name: 'Enterprise',
+    subtitle: 'Government agencies, chambers, and large corporations',
+    monthlyPrice: 0,
+    annualMonthlyPrice: 0,
+    annualPrice: 0,
+    price: 0,
+    period: 'custom',
+    annualPeriodLabel: 'Custom pricing',
+    monthlyPeriodLabel: 'Custom pricing',
+    commissionRate: 2,
+    features: [
+      'Directory Profile',
+      'Unlimited match views',
+      'Deal room access',
+      'Unlimited escrow transactions',
+      'AI Trade Advisor',
+      'Custom trade intelligence',
+      'Free event access',
+      'Dedicated support',
+      'API access',
+      'Dedicated account manager',
+    ],
   },
 ];
 

@@ -1,8 +1,13 @@
 import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2023-10-16',
 });
+
+const supabaseUrl = process.env.SUPABASE_URL || 'https://wihcbiminnorjuhffedb.supabase.co';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const PLAN_MAP: Record<string, { name: string; tier: string }> = {
   starter: { name: 'Starter', tier: 'starter' },
@@ -10,9 +15,48 @@ const PLAN_MAP: Record<string, { name: string; tier: string }> = {
   enterprise: { name: 'Enterprise', tier: 'enterprise' },
 };
 
-// In-memory storage (use Supabase in production)
-const subscriptions: Map<string, any> = new Map();
-const users: Map<string, any> = new Map();
+async function getOrCreateProfile(userId: string) {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  
+  return profile;
+}
+
+async function updateProfile(userId: string, updates: Record<string, any>) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', userId)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+}
+
+async function createSubscriptionRecord(subscription: any, userId: string, planId: string, planInfo: { name: string; tier: string }, customerId: string) {
+  const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .insert({
+      user_id: userId,
+      plan_id: planId,
+      plan_name: planInfo.name,
+      status: 'active',
+      stripe_subscription_id: subscription.id,
+      current_period_start: new Date().toISOString(),
+      current_period_end: periodEnd.toISOString(),
+    })
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+}
 
 export default async function handler(req: Request) {
   if (req.method !== 'POST') {
@@ -27,6 +71,7 @@ export default async function handler(req: Request) {
       return new Response(JSON.stringify({ success: false, error: 'Missing required fields' }), { status: 400 });
     }
 
+    const planInfo = PLAN_MAP[planId] || { name: planId, tier: planId };
     const customerEmail = `user_${userId}@diltradebridge.com`;
     
     let customerId = `cus_${userId}_${Date.now()}`;
@@ -67,24 +112,12 @@ export default async function handler(req: Request) {
     const invoice = subscription.latest_invoice as Stripe.Invoice;
     const paymentIntent = invoice?.payment_intent as Stripe.PaymentIntent;
 
-    // Save to storage
-    const planInfo = PLAN_MAP[planId] || { name: planId, tier: planId };
-    subscriptions.set(subscription.id, {
-      id: subscription.id,
-      userId,
-      planId,
-      planName: planInfo.name,
-      status: 'active',
-      customerId,
-      currentPeriodStart: new Date(),
-      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    await updateProfile(userId, {
+      membership_tier: planInfo.tier,
+      stripe_customer_id: customerId,
     });
 
-    users.set(userId, {
-      ...users.get(userId),
-      membershipTier: planInfo.tier,
-      stripeCustomerId: customerId,
-    });
+    await createSubscriptionRecord(subscription, userId, planId, planInfo, customerId);
 
     console.log('Subscription created:', { subscriptionId: subscription.id, userId, planId });
 

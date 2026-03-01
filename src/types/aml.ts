@@ -14,6 +14,7 @@ export interface AMLCheck {
   details: {
     businessName?: string;
     individualName?: string;
+    dateOfBirth?: string;
     registrationNumber?: string;
     country?: string;
     address?: string;

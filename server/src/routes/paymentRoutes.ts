@@ -214,8 +214,8 @@ async function verifyCard(cardNumber: string, expiryMonth: number, expiryYear: n
         exp_month: expiryMonth,
         exp_year: expiryYear,
         cvc: '123',
-      },
-    });
+      } as any,
+    } as any);
     return !!token.id;
   } catch {
     return false;

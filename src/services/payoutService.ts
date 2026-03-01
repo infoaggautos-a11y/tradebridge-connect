@@ -1,6 +1,7 @@
 import { Payout, PayoutStatus, PayoutDestination, CreatePayoutParams } from '@/types/payout';
 import { walletService } from './walletService';
 import { notificationService } from './notificationService';
+import { API_URL, getAccessHeaders } from '@/config/api';
 
 const generateId = () => `payout_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -188,9 +189,9 @@ class PayoutService {
     }
 
     try {
-      const response = await fetch('/api/payouts/process', {
+      const response = await fetch(`${API_URL}/api/payouts/payout/process`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAccessHeaders({ userId: payout.userId }),
         body: JSON.stringify({
           payoutId: payout.id,
           amount: payout.amount,

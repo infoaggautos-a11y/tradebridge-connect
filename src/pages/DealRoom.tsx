@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MemberLayout } from '@/layouts/MemberLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { getBusinessById, businesses } from '@/data/mockData';
@@ -37,11 +37,19 @@ import {
   MoreHorizontal,
   Upload,
 } from 'lucide-react';
+import { ESCROW_MONTHLY_LIMIT, PLAN_DISPLAY_NAMES } from '@/lib/planAccess';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
+import { consumeEscrowUsage, getEscrowUsage } from '@/services/accessService';
+import { useToast } from '@/hooks/use-toast';
 
 export default function DealRoom() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const userTier = user?.membershipTier || 'free';
+  const escrowAccess = useFeatureAccess('escrow-transactions');
   const businessId = user?.businessId || 'b1';
   const allDeals = dealService.getAllDeals();
+  const allEscrows = dealService.getAllEscrows();
   const myDeals = allDeals.filter(d => d.buyerId === businessId || d.sellerId === businessId);
   const [selectedDealId, setSelectedDealId] = useState<string | null>(myDeals[0]?.id || null);
   const selectedDeal = selectedDealId ? dealService.getDeal(selectedDealId) : null;
@@ -50,6 +58,48 @@ export default function DealRoom() {
   const isBuyer = selectedDeal?.buyerId === businessId;
   const otherPartyId = isBuyer ? selectedDeal?.sellerId : selectedDeal?.buyerId;
   const otherParty = otherPartyId ? getBusinessById(otherPartyId) : null;
+  const escrowMonthlyLimit = ESCROW_MONTHLY_LIMIT[userTier];
+  const [serverEscrowUsage, setServerEscrowUsage] = useState<{ used: number; limit: number } | null>(null);
+  const now = new Date();
+  const localEscrowUsedThisMonth = allEscrows.filter((item) => {
+    if (item.buyerId !== businessId || !item.fundedAt) return false;
+    const fundedDate = new Date(item.fundedAt);
+    return fundedDate.getMonth() === now.getMonth() && fundedDate.getFullYear() === now.getFullYear();
+  }).length;
+  const escrowUsedThisMonth = serverEscrowUsage?.used ?? localEscrowUsedThisMonth;
+  const effectiveEscrowLimit = serverEscrowUsage?.limit ?? escrowMonthlyLimit;
+  const escrowLimitReached = effectiveEscrowLimit !== -1 && escrowUsedThisMonth >= effectiveEscrowLimit;
+  const escrowActionBlocked = escrowLimitReached || !escrowAccess.allowed;
+
+  useEffect(() => {
+    let active = true;
+    if (!user?.id) return;
+    getEscrowUsage({ userId: user.id, membershipTier: userTier }).then((result) => {
+      if (!active) return;
+      setServerEscrowUsage({ used: result.used, limit: result.limit });
+    });
+    return () => {
+      active = false;
+    };
+  }, [user?.id, userTier]);
+
+  const handleEscrowConsume = async () => {
+    if (!user?.id || escrowActionBlocked) return;
+    const result = await consumeEscrowUsage({ userId: user.id, membershipTier: userTier });
+    setServerEscrowUsage({ used: result.used, limit: result.limit });
+    if (!result.allowed && result.limit !== -1 && result.used >= result.limit) {
+      toast({
+        title: 'Escrow Limit Reached',
+        description: 'You have reached your monthly escrow transaction limit for this plan.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    toast({
+      title: 'Escrow Action Recorded',
+      description: 'Escrow usage has been recorded successfully.',
+    });
+  };
 
   const getStatusBadge = (status: DealStatus) => {
     const colors: Record<DealStatus, string> = {
@@ -96,6 +146,23 @@ export default function DealRoom() {
             New Deal
           </Button>
         </div>
+        {escrowMonthlyLimit !== -1 && (
+          <Card className="border-gold/30 bg-gold/5">
+            <CardContent className="p-4 text-sm flex items-center justify-between gap-4">
+              <span>
+                {PLAN_DISPLAY_NAMES[userTier]} escrow usage this month: {escrowUsedThisMonth}/{effectiveEscrowLimit === -1 ? 'Unlimited' : effectiveEscrowLimit}
+              </span>
+              {escrowLimitReached && <Button size="sm" variant="outline">Upgrade to increase limit</Button>}
+            </CardContent>
+          </Card>
+        )}
+        {!escrowAccess.loading && !escrowAccess.allowed && (
+          <Card className="border-gold/30 bg-gold/5">
+            <CardContent className="p-4 text-sm">
+              Your current plan does not include escrow transactions. Upgrade to Pro or higher to continue.
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Deal List */}
@@ -234,7 +301,7 @@ export default function DealRoom() {
                                 </div>
                               </div>
                               {milestone.status === 'pending' && (
-                                <Button size="sm">
+                                <Button size="sm" disabled={isBuyer && escrowActionBlocked} onClick={() => isBuyer && handleEscrowConsume()}>
                                   {isBuyer ? 'Fund' : 'Deliver'}
                                 </Button>
                               )}
@@ -301,7 +368,7 @@ export default function DealRoom() {
                             {/* Actions */}
                             {escrow.status === 'pending' && (
                               <div className="flex gap-2">
-                                <Button className="flex-1">
+                                <Button className="flex-1" disabled={escrowActionBlocked} onClick={handleEscrowConsume}>
                                   <Wallet className="h-4 w-4 mr-2" />
                                   Fund Escrow
                                 </Button>
@@ -327,7 +394,7 @@ export default function DealRoom() {
                             <p className="text-sm text-muted-foreground mb-4">
                               Create an escrow to secure this deal
                             </p>
-                            <Button>
+                            <Button disabled={escrowActionBlocked} onClick={handleEscrowConsume}>
                               <Shield className="h-4 w-4 mr-2" />
                               Create Escrow
                             </Button>

@@ -38,6 +38,7 @@ import PartnersPage from "./pages/Partners";
 import ContactUs from "./pages/ContactUs";
 import NewsEvents from "./pages/NewsEvents";
 import TrainingProgrammes from "./pages/TrainingProgrammes";
+import { PlanProtectedRoute } from "@/components/access/PlanProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -70,10 +71,31 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/verification" element={<KYCVerification />} />
             <Route path="/disputes" element={<Disputes />} />
-            <Route path="/deals" element={<DealRoom />} />
+            <Route
+              path="/deals"
+              element={
+                <PlanProtectedRoute requiredTier="starter" feature="deal-room">
+                  <DealRoom />
+                </PlanProtectedRoute>
+              }
+            />
             <Route path="/wallet" element={<Wallet />} />
-            <Route path="/advisor" element={<AIAdvisor />} />
-            <Route path="/intelligence" element={<TradeIntelligence />} />
+            <Route
+              path="/advisor"
+              element={
+                <PlanProtectedRoute requiredTier="growth" feature="ai-advisor">
+                  <AIAdvisor />
+                </PlanProtectedRoute>
+              }
+            />
+            <Route
+              path="/intelligence"
+              element={
+                <PlanProtectedRoute requiredTier="starter" feature="trade-intelligence">
+                  <TradeIntelligence />
+                </PlanProtectedRoute>
+              }
+            />
             {/* Admin */}
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/businesses" element={<AdminBusinesses />} />
