@@ -30,6 +30,8 @@ import NotFound from "./pages/NotFound";
 import AIAdvisor from "./pages/AIAdvisor";
 import TradeIntelligence from "./pages/TradeIntelligence";
 import MarketingAutomation from "./pages/MarketingAutomation";
+import FinanceDashboard from "./pages/FinanceDashboard";
+import Wallet from "./pages/Wallet";
 import AboutUs from "./pages/AboutUs";
 import OurServices from "./pages/OurServices";
 import PartnersPage from "./pages/Partners";
@@ -69,6 +71,7 @@ const App = () => (
             <Route path="/verification" element={<KYCVerification />} />
             <Route path="/disputes" element={<Disputes />} />
             <Route path="/deals" element={<DealRoom />} />
+            <Route path="/wallet" element={<Wallet />} />
             <Route path="/advisor" element={<AIAdvisor />} />
             <Route path="/intelligence" element={<TradeIntelligence />} />
             {/* Admin */}
@@ -81,6 +84,7 @@ const App = () => (
             <Route path="/admin/kyc" element={<AdminKYCQueue />} />
             <Route path="/admin/disputes" element={<AdminDisputes />} />
             <Route path="/admin/marketing" element={<MarketingAutomation />} />
+            <Route path="/admin/finance" element={<FinanceDashboard />} />
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
