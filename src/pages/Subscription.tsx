@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MemberLayout } from '@/layouts/MemberLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { membershipPlans } from '@/data/mockData';
@@ -11,16 +12,27 @@ import { ArrowUp, ArrowDown, CreditCard, Loader2, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { API_URL, STRIPE_PUBLISHABLE_KEY, getAccessHeaders } from '@/config/api';
 
-const stripePromise = loadStripe('pk_test_51T5TpVEPAQKb2xdh9mGnFrkFGBjOEx35NuiHGmtxdWorfG78VQnuI42TpWlVd0Han0WghsDNvbee8si2ytjA3HE700BOjt48PT');
+const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
-const PLAN_PRICES: Record<string, { priceId: string; amount: number }> = {
-  starter: { priceId: 'price_starter', amount: 4900 },
-  growth: { priceId: 'price_growth', amount: 14900 },
-  enterprise: { priceId: 'price_enterprise', amount: 49900 },
+const PLAN_PRICES: Record<string, { monthly: { priceId: string }; annual: { priceId: string } }> = {
+  starter: { monthly: { priceId: 'price_pro_monthly' }, annual: { priceId: 'price_pro_annual' } },
+  growth: { monthly: { priceId: 'price_business_monthly' }, annual: { priceId: 'price_business_annual' } },
+  enterprise: { monthly: { priceId: 'price_enterprise_custom' }, annual: { priceId: 'price_enterprise_custom' } },
 };
 
-function CheckoutForm({ plan, onSuccess, onCancel }: { plan: typeof membershipPlans[0]; onSuccess: () => void; onCancel: () => void }) {
+function CheckoutForm({
+  plan,
+  amount,
+  onSuccess,
+  onCancel,
+}: {
+  plan: typeof membershipPlans[0];
+  amount: number;
+  onSuccess: () => void;
+  onCancel: () => void;
+}) {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +68,7 @@ function CheckoutForm({ plan, onSuccess, onCancel }: { plan: typeof membershipPl
       <div className="flex gap-2">
         <Button type="submit" disabled={!stripe || processing} className="flex-1">
           {processing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          Pay ${plan.price}
+          Pay ${amount}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
       </div>
@@ -66,39 +78,56 @@ function CheckoutForm({ plan, onSuccess, onCancel }: { plan: typeof membershipPl
 
 export default function SubscriptionPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const currentPlan = membershipPlans.find(p => p.tier === user?.membershipTier) || membershipPlans[0];
   const currentIdx = membershipPlans.findIndex(p => p.tier === currentPlan.tier);
   
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<typeof membershipPlans[0] | null>(null);
+  const [selectedAmount, setSelectedAmount] = useState<number>(0);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
+  const getPlanAmount = (plan: typeof membershipPlans[0]) =>
+    billingCycle === 'annual' ? plan.annualMonthlyPrice : plan.monthlyPrice;
+
   const mockBilling = [
-    { date: '2026-02-01', amount: currentPlan.price, status: 'Paid' },
-    { date: '2026-01-01', amount: currentPlan.price, status: 'Paid' },
-    { date: '2025-12-01', amount: currentPlan.price, status: 'Paid' },
+    { date: '2026-02-01', amount: getPlanAmount(currentPlan), status: 'Paid' },
+    { date: '2026-01-01', amount: getPlanAmount(currentPlan), status: 'Paid' },
+    { date: '2025-12-01', amount: getPlanAmount(currentPlan), status: 'Paid' },
   ];
 
   const handleSubscribe = async (plan: typeof membershipPlans[0]) => {
-    if (plan.price === 0) {
+    if (plan.tier === 'free') {
       toast({ title: 'Free Plan', description: 'You are already on the free plan.' });
       return;
     }
+    if (plan.tier === 'enterprise') {
+      navigate('/contact-us');
+      return;
+    }
+
+    const amount = getPlanAmount(plan);
 
     setSelectedPlan(plan);
+    setSelectedAmount(amount);
     setLoadingPlan(plan.tier);
 
     try {
-      const response = await fetch('http://localhost:3001/api/payments/stripe/create-subscription', {
+      const response = await fetch(`${API_URL}/api/subscriptions/stripe/create-subscription`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAccessHeaders({
+          userId: user?.id || 'user_001',
+          membershipTier: user?.membershipTier || 'free',
+        }),
         body: JSON.stringify({
           userId: user?.id || 'user_001',
           planId: plan.tier,
-          priceId: PLAN_PRICES[plan.tier]?.priceId || `price_${plan.tier}`,
-          amount: PLAN_PRICES[plan.tier]?.amount || plan.price * 100,
+          billingCycle,
+          priceId: PLAN_PRICES[plan.tier]?.[billingCycle]?.priceId || `price_${plan.tier}_${billingCycle}`,
+          amount: amount * 100,
         }),
       });
 
@@ -136,6 +165,13 @@ export default function SubscriptionPage() {
       toast({ title: 'Payment Successful!', description: 'Your subscription is now active.' });
       window.history.replaceState({}, '', '/subscription');
     }
+    const upgradeFeature = params.get('upgrade');
+    if (upgradeFeature) {
+      toast({
+        title: 'Upgrade Required',
+        description: 'Your current plan does not include that feature. Upgrade to continue.',
+      });
+    }
   }, [toast]);
 
   return (
@@ -148,23 +184,55 @@ export default function SubscriptionPage() {
           <CardContent className="flex items-center justify-between">
             <div>
               <div className="text-2xl font-bold">{currentPlan.name}</div>
-              <div className="text-muted-foreground">{currentPlan.price === 0 ? 'Free forever' : `$${currentPlan.price}/month`}</div>
+              <div className="text-muted-foreground">
+                {currentPlan.tier === 'free' ? 'Free forever' : `$${getPlanAmount(currentPlan)}/month`}
+              </div>
             </div>
-            <Badge className="bg-gold/20 text-gold-dark capitalize">{currentPlan.tier}</Badge>
+            <Badge className="bg-gold/20 text-gold-dark">{currentPlan.name}</Badge>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle>Available Plans</CardTitle>
-            <CardDescription>Choose the plan that best fits your business needs</CardDescription>
+            <CardDescription>Choose the plan that best fits your business needs. Annual billing saves 20%.</CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="flex justify-center mb-6">
+              <div className="inline-flex rounded-lg border border-border bg-background p-1">
+                <button
+                  type="button"
+                  className={`px-4 py-2 text-sm rounded-md transition ${billingCycle === 'monthly' ? 'bg-secondary text-foreground font-medium' : 'text-muted-foreground'}`}
+                  onClick={() => setBillingCycle('monthly')}
+                >
+                  Monthly
+                </button>
+                <button
+                  type="button"
+                  className={`px-4 py-2 text-sm rounded-md transition ${billingCycle === 'annual' ? 'bg-gold text-navy font-semibold' : 'text-muted-foreground'}`}
+                  onClick={() => setBillingCycle('annual')}
+                >
+                  Annual - Save 20%
+                </button>
+              </div>
+            </div>
             <div className="grid md:grid-cols-4 gap-4">
               {membershipPlans.map((plan, i) => (
                 <div key={plan.tier} className={`p-4 rounded-lg border ${plan.tier === currentPlan.tier ? 'border-gold bg-gold/5' : ''}`}>
                   <div className="font-semibold mb-1">{plan.name}</div>
-                  <div className="text-lg font-bold mb-3">{plan.price === 0 ? 'Free' : `$${plan.price}/mo`}</div>
+                  <div className="text-xs text-muted-foreground mb-1">{plan.subtitle}</div>
+                  <div className="text-lg font-bold mb-1">
+                    {plan.tier === 'free' ? 'Free' : plan.tier === 'enterprise' ? 'Custom' : `$${getPlanAmount(plan)}/mo`}
+                  </div>
+                  {plan.tier !== 'free' && plan.tier !== 'enterprise' && billingCycle === 'annual' && (
+                    <div className="text-xs text-muted-foreground mb-1">Billed as ${plan.annualPrice}/year - cancel anytime</div>
+                  )}
+                  {plan.tier !== 'free' && plan.tier !== 'enterprise' && plan.ngnMonthlyPrice && (
+                    <div className="text-xs text-muted-foreground mb-3">
+                      NGN: {billingCycle === 'annual' ? `N${plan.ngnAnnualPrice?.toLocaleString()}/year` : `N${plan.ngnMonthlyPrice.toLocaleString()}/month`}
+                    </div>
+                  )}
+                  {plan.trialAvailable && <div className="text-xs text-green-600 mb-2">14-day free trial. No credit card required.</div>}
                   {plan.tier === currentPlan.tier ? (
                     <Badge variant="outline">Current</Badge>
                   ) : (
@@ -177,6 +245,10 @@ export default function SubscriptionPage() {
                     >
                       {loadingPlan === plan.tier ? (
                         <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : plan.tier === 'enterprise' ? (
+                        'Contact Sales'
+                      ) : plan.tier === 'starter' || plan.tier === 'growth' ? (
+                        'Start 14-Day Trial'
                       ) : i > currentIdx ? (
                         <><ArrowUp className="h-3 w-3 mr-1" />Upgrade</>
                       ) : (
@@ -228,13 +300,14 @@ export default function SubscriptionPage() {
           <DialogHeader>
             <DialogTitle>Subscribe to {selectedPlan?.name}</DialogTitle>
             <DialogDescription>
-              Pay ${selectedPlan?.price}/month with your card
+              Pay ${selectedAmount}/month with your card
             </DialogDescription>
           </DialogHeader>
           {clientSecret && selectedPlan ? (
             <Elements stripe={stripePromise} options={{ clientSecret }}>
               <CheckoutForm 
                 plan={selectedPlan} 
+                amount={selectedAmount}
                 onSuccess={handlePaymentSuccess}
                 onCancel={() => setShowPaymentModal(false)}
               />

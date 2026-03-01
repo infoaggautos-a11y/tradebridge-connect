@@ -14,6 +14,7 @@ import webhookRoutes from './routes/webhookRoutes.js';
 import { logger } from './services/logger.js';
 import { processScheduledRenewals } from './services/subscriptionService.js';
 import { processPendingPayouts } from './services/payoutService.js';
+import { checkDatabaseHealth } from './services/database.js';
 import { 
   applyRateLimit, 
   apiLimiter, 
@@ -49,7 +50,9 @@ app.use(cors({
     : ['http://localhost:5173', 'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8082'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID', 'X-Membership-Tier', 'X-User-Id'],
+  exposedHeaders: ['X-Request-ID'],
+  preflightContinue: false,
 }));
 
 // Request logging
@@ -64,11 +67,15 @@ app.use(requestId);
 app.use(sanitizeInput);
 
 // Health check (no rate limit)
-app.get('/health', (req: Request, res: Response) => {
-  res.json({ 
-    status: 'ok', 
+app.get('/health', async (req: Request, res: Response) => {
+  const dbHealth = await checkDatabaseHealth();
+  const overallStatus = dbHealth.status === 'ok' ? 'ok' : 'degraded';
+
+  res.status(overallStatus === 'ok' ? 200 : 503).json({ 
+    status: overallStatus,
     timestamp: new Date().toISOString(),
     version: '1.0.0',
+    database: dbHealth,
   });
 });
 

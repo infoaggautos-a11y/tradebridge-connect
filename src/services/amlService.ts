@@ -115,6 +115,7 @@ class AMLService {
       expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
       details: {
         individualName: name,
+        dateOfBirth,
         country,
         address,
         matches: result.matches,

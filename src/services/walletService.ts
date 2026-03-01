@@ -9,6 +9,7 @@ import {
 } from '@/types/wallet';
 import { paymentService } from './paymentService';
 import { notificationService } from './notificationService';
+import { API_URL, getAccessHeaders } from '@/config/api';
 
 const generateId = () => `wallet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 const generateTransactionId = () => `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -211,6 +212,7 @@ class WalletService {
     walletId: string;
     amount: number;
     currency: string;
+    membershipTier?: 'free' | 'starter' | 'growth' | 'enterprise';
     destination: {
       type: 'bank_account';
       bankName: string;
@@ -251,8 +253,10 @@ class WalletService {
 
     const payoutResult = await this.processPayout({
       walletId,
+      userId: wallet.userId,
       amount,
       currency,
+      membershipTier: params.membershipTier,
       destination,
       transactionId: pendingTransaction.id,
     });
@@ -287,8 +291,10 @@ class WalletService {
 
   private async processPayout(params: {
     walletId: string;
+    userId: string;
     amount: number;
     currency: string;
+    membershipTier?: 'free' | 'starter' | 'growth' | 'enterprise';
     destination: {
       type: 'bank_account';
       bankName: string;
@@ -299,14 +305,18 @@ class WalletService {
     transactionId: string;
   }): Promise<{ success: boolean; reason?: string; providerReference?: string }> {
     try {
-      const response = await fetch('/api/payouts/create', {
+      const response = await fetch(`${API_URL}/api/payouts/payout/create`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAccessHeaders({
+          userId: params.userId,
+          membershipTier: params.membershipTier || 'free',
+        }),
         body: JSON.stringify({
+          userId: params.userId,
           walletId: params.walletId,
           amount: params.amount,
           currency: params.currency,
-          destination: params.destination,
+          bankAccountId: params.destination.accountNumber,
           transactionId: params.transactionId,
         }),
       });
