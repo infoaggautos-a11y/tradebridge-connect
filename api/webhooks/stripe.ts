@@ -186,7 +186,3 @@ export default async function handler(req: Request) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
-
-export const config = {
-  runtime: 'nodejs18.x',
-};
