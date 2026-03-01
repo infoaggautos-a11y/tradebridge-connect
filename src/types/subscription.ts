@@ -111,5 +111,5 @@ export const isPlanLimitReached = (plan: SubscriptionPlan, feature: keyof Subscr
   const limit = plan.limits[feature];
   if (typeof limit !== 'number') return false;
   if (limit === -1) return false;
-  return used >= limit;
+  return used >= Number(limit);
 };
