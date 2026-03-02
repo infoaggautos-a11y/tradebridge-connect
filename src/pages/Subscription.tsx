@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ArrowUp, CreditCard, Loader2, Settings, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { STRIPE_TIERS, getTierByProductId } from '@/config/stripe';
+import { STRIPE_TIERS, BillingCycle } from '@/config/stripe';
+import { getApiUrl } from '@/config/api';
 
 export default function SubscriptionPage() {
   const { user, refreshSubscription } = useAuth();
@@ -17,6 +17,7 @@ export default function SubscriptionPage() {
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [loadingPortal, setLoadingPortal] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('annual');
 
   const currentTier = user?.membershipTier || 'free';
 
@@ -39,19 +40,33 @@ export default function SubscriptionPage() {
       navigate('/contact');
       return;
     }
+    if (!user?.id) {
+      toast({ title: 'Authentication required', description: 'Please log in and try again.', variant: 'destructive' });
+      return;
+    }
 
     const stripeConfig = STRIPE_TIERS[planTier as keyof typeof STRIPE_TIERS];
     if (!stripeConfig) return;
 
     setLoadingPlan(planTier);
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId: stripeConfig.price_id },
+      const response = await fetch(getApiUrl('/api/subscriptions/stripe/checkout-session'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          email: user?.email,
+          planTier,
+          billingCycle,
+        }),
       });
+      const data = await response.json();
 
-      if (error) throw error;
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.error || 'Could not start checkout');
+      }
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.location.href = data.url;
       } else {
         throw new Error('No checkout URL returned');
       }
@@ -64,12 +79,23 @@ export default function SubscriptionPage() {
   };
 
   const handleManageSubscription = async () => {
+    if (!user?.id) {
+      toast({ title: 'Authentication required', description: 'Please log in and try again.', variant: 'destructive' });
+      return;
+    }
     setLoadingPortal(true);
     try {
-      const { data, error } = await supabase.functions.invoke('customer-portal');
-      if (error) throw error;
+      const response = await fetch(getApiUrl('/api/subscriptions/stripe/customer-portal'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user?.id }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.error || 'Could not open subscription management');
+      }
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.location.href = data.url;
       } else {
         throw new Error('No portal URL returned');
       }
@@ -116,17 +142,41 @@ export default function SubscriptionPage() {
             <CardDescription>Choose the plan that best fits your business needs. All paid plans include a 14-day free trial.</CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="flex justify-center mb-6">
+              <div className="inline-flex rounded-lg border border-border bg-background p-1">
+                <button
+                  type="button"
+                  className={`px-4 py-2 text-sm rounded-md transition ${billingCycle === 'monthly' ? 'bg-secondary text-foreground font-medium' : 'text-muted-foreground'}`}
+                  onClick={() => setBillingCycle('monthly')}
+                >
+                  Monthly
+                </button>
+                <button
+                  type="button"
+                  className={`px-4 py-2 text-sm rounded-md transition ${billingCycle === 'annual' ? 'bg-gold text-navy font-semibold' : 'text-muted-foreground'}`}
+                  onClick={() => setBillingCycle('annual')}
+                >
+                  Annual - Save 20%
+                </button>
+              </div>
+            </div>
             <div className="grid md:grid-cols-4 gap-4">
               {membershipPlans.map((plan) => {
                 const stripeConfig = STRIPE_TIERS[plan.tier as keyof typeof STRIPE_TIERS];
                 const isCurrent = plan.tier === currentTier;
-                const price = stripeConfig ? `$${stripeConfig.monthlyPrice}` : plan.tier === 'free' ? 'Free' : 'Custom';
+                const cyclePrice = stripeConfig
+                  ? (billingCycle === 'annual' ? stripeConfig.annualMonthlyPrice : stripeConfig.monthlyPrice)
+                  : null;
+                const price = cyclePrice !== null ? `$${cyclePrice}` : plan.tier === 'free' ? 'Free' : 'Custom';
 
                 return (
                   <div key={plan.tier} className={`p-4 rounded-lg border ${isCurrent ? 'border-gold bg-gold/5' : ''} ${plan.highlighted ? 'ring-2 ring-gold' : ''}`}>
                     <div className="font-semibold mb-1">{plan.name}</div>
                     <div className="text-xs text-muted-foreground mb-1">{plan.subtitle}</div>
                     <div className="text-lg font-bold mb-1">{price}{stripeConfig ? '/mo' : ''}</div>
+                    {stripeConfig && billingCycle === 'annual' && (
+                      <div className="text-[11px] text-muted-foreground mb-1">Billed as ${stripeConfig.annualPrice}/year</div>
+                    )}
                     {plan.trialAvailable && <div className="text-xs text-green-600 mb-2">14-day free trial</div>}
 
                     <ul className="text-xs text-muted-foreground space-y-1 mb-3">

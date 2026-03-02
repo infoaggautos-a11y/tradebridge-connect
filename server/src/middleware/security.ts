@@ -96,6 +96,10 @@ export function requestId(req: Request, res: Response, next: NextFunction) {
 
 // Input sanitization
 export function sanitizeInput(req: Request, res: Response, next: NextFunction) {
+  if (Buffer.isBuffer(req.body)) {
+    return next();
+  }
+
   const sanitize = (obj: any): any => {
     if (!obj) return obj;
     

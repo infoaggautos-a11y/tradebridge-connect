@@ -53,12 +53,18 @@ CREATE TABLE IF NOT EXISTS public.payments (
 CREATE TABLE IF NOT EXISTS public.wallets (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  business_id UUID,
   type TEXT DEFAULT 'main',
   currency TEXT DEFAULT 'USD',
   balance INTEGER DEFAULT 0,
   pending_balance INTEGER DEFAULT 0,
   available_balance INTEGER DEFAULT 0,
+  frozen_balance INTEGER DEFAULT 0,
   status TEXT DEFAULT 'active',
+  bank_name TEXT,
+  bank_account_name TEXT,
+  bank_account_number TEXT,
+  bank_code TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(user_id, type)
@@ -89,6 +95,8 @@ CREATE TABLE IF NOT EXISTS public.payouts (
   provider TEXT,
   provider_ref TEXT,
   failure_reason TEXT,
+  initiated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  completed_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -109,6 +117,30 @@ CREATE TABLE IF NOT EXISTS public.webhook_events (
   event_type TEXT NOT NULL,
   event_data JSONB NOT NULL,
   processed BOOLEAN DEFAULT false,
+  processed_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Payment methods table
+CREATE TABLE IF NOT EXISTS public.payment_methods (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  provider TEXT NOT NULL,
+  is_default BOOLEAN DEFAULT false,
+  is_verified BOOLEAN DEFAULT false,
+  stripe_payment_method_id TEXT,
+  paystack_payment_method_id TEXT,
+  card_last4 TEXT,
+  card_brand TEXT,
+  expiry_month INTEGER,
+  expiry_year INTEGER,
+  card_holder_name TEXT,
+  bank_name TEXT,
+  account_number TEXT,
+  account_holder_name TEXT,
+  routing_number TEXT,
+  country TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -132,6 +164,7 @@ ALTER TABLE public.wallet_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payouts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.platform_revenue ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.webhook_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_methods ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for profiles (users can read/update their own profile)
 CREATE POLICY "Users can view own profile" ON public.profiles

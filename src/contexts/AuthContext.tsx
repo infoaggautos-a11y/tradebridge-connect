@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { supabase } from '@/integrations/supabase/client';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { MembershipTier } from '@/data/mockData';
+import { API_URL } from '@/config/api';
 
 export type UserRole = 'member' | 'admin';
 
@@ -37,7 +38,7 @@ const ADMIN_EMAILS = ['admin@dil.com', 'admin@diltradebridge.com'];
 function mapSupabaseUser(supaUser: SupabaseUser, profile?: any, subData?: any): User {
   const email = supaUser.email || '';
   const role: UserRole = ADMIN_EMAILS.includes(email) ? 'admin' : 'member';
-  const tier = (profile?.membership_tier || 'free') as MembershipTier;
+  const tier = (subData?.tier || profile?.membership_tier || 'free') as MembershipTier;
 
   return {
     id: supaUser.id,
@@ -60,13 +61,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkSubscription = async (session: Session | null) => {
     if (!session) return null;
     try {
-      const { data, error } = await supabase.functions.invoke('check-subscription', {
-        headers: { Authorization: `Bearer ${session.access_token}` },
+      const response = await fetch(`${API_URL}/api/subscriptions/status/${session.user.id}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
       });
-      if (error) {
-        console.error('Subscription check error:', error);
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('Subscription check error:', text);
         return null;
       }
+      const data = await response.json();
       return data;
     } catch {
       return null;
@@ -112,7 +116,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session) {
         const subData = await checkSubscription(session);
         if (subData) {
-          setUser(prev => prev ? { ...prev, subscribed: subData.subscribed, subscriptionEnd: subData.subscription_end, productId: subData.product_id, membershipTier: subData.subscribed ? (prev.membershipTier === 'free' ? 'starter' : prev.membershipTier) : 'free' } : null);
+          setUser(prev => prev ? {
+            ...prev,
+            subscribed: !!subData.subscribed,
+            subscriptionEnd: subData.subscription_end || undefined,
+            productId: subData.product_id || undefined,
+            membershipTier: (subData.tier || 'free') as MembershipTier,
+          } : null);
         }
       }
     }, 60000);

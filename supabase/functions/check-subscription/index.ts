@@ -12,6 +12,18 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+const PRODUCT_TO_TIER: Record<string, string> = {
+  [Deno.env.get('STRIPE_STARTER_PRODUCT_ID') ?? 'prod_U4cYy6J41GDHGw']: 'starter',
+  [Deno.env.get('STRIPE_GROWTH_PRODUCT_ID') ?? 'prod_U4cYGtrCr3CGsu']: 'growth',
+};
+
+const PRICE_TO_TIER: Record<string, string> = {
+  [Deno.env.get('STRIPE_STARTER_MONTHLY_PRICE_ID') ?? 'price_1T6TJpEPAQKb2xdh60Q4Juwp']: 'starter',
+  [Deno.env.get('STRIPE_STARTER_ANNUAL_PRICE_ID') ?? 'price_1T6TJqEPAQKb2xdhETUXy6Sy']: 'starter',
+  [Deno.env.get('STRIPE_GROWTH_MONTHLY_PRICE_ID') ?? 'price_1T6TJrEPAQKb2xdh3LmM48gg']: 'growth',
+  [Deno.env.get('STRIPE_GROWTH_ANNUAL_PRICE_ID') ?? 'price_1T6TJrEPAQKb2xdhBB3j1taO']: 'growth',
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -75,21 +87,21 @@ serve(async (req) => {
     if (hasActiveSub) {
       const subscription = allSubs[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      productId = subscription.items.data[0].price.product;
+      const subPrice = subscription.items.data[0].price;
+      productId = subPrice.product;
       status = subscription.status;
       logStep("Active subscription found", { subscriptionId: subscription.id, productId, status });
 
-      // Update profile membership_tier
-      const tierMap: Record<string, string> = {
-        'prod_U49k5o50AtZql7': 'starter',
-        'prod_U4YjlS1UbBEeVV': 'growth',
-      };
-      const tier = tierMap[productId as string] || 'free';
+      const resolvedTier =
+        PRODUCT_TO_TIER[String(productId)] ||
+        PRICE_TO_TIER[subPrice.id] ||
+        'free';
+
       await supabaseClient.from('profiles').update({
-        membership_tier: tier,
+        membership_tier: resolvedTier,
         stripe_customer_id: customerId,
       }).eq('id', user.id);
-      logStep("Profile updated", { tier });
+      logStep("Profile updated", { tier: resolvedTier, priceId: subPrice.id });
     } else {
       logStep("No active subscription found");
       await supabaseClient.from('profiles').update({

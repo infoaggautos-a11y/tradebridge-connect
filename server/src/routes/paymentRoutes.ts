@@ -3,20 +3,9 @@ import Stripe from 'stripe';
 import { body, validationResult } from 'express-validator';
 import { createPaymentIntent, verifyPayment, createRefund } from '../services/stripeService.js';
 import { logger } from '../services/logger.js';
+import { isBillingCycle, isPlanTier, getPlanPriceConfig, PLAN_MAP } from '../config/plans.js';
 
 const router = Router();
-
-const SUBSCRIPTION_PRICES: Record<string, string> = {
-  starter: process.env.STRIPE_STARTER_MONTHLY_PRICE_ID || 'price_starter_monthly',
-  growth: process.env.STRIPE_GROWTH_MONTHLY_PRICE_ID || 'price_growth_monthly',
-  enterprise: process.env.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID || 'price_enterprise_monthly',
-};
-
-const PLAN_MAP: Record<string, { name: string; tier: string }> = {
-  starter: { name: 'Starter', tier: 'starter' },
-  growth: { name: 'Growth', tier: 'growth' },
-  enterprise: { name: 'Enterprise', tier: 'enterprise' },
-};
 
 const subscriptions: Map<string, any> = new Map();
 const users: Map<string, any> = new Map();
@@ -24,8 +13,7 @@ const users: Map<string, any> = new Map();
 router.post('/stripe/create-subscription',
   body('userId').isString(),
   body('planId').isString(),
-  body('priceId').optional().isString(),
-  body('amount').optional().isInt(),
+  body('billingCycle').optional().isString(),
   async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);
@@ -33,7 +21,22 @@ router.post('/stripe/create-subscription',
         return res.status(400).json({ success: false, errors: errors.array() });
       }
 
-      const { userId, planId, priceId, amount } = req.body;
+      const { userId, planId, billingCycle = 'annual' } = req.body as {
+        userId: string;
+        planId: string;
+        billingCycle?: string;
+      };
+
+      if (!isPlanTier(planId)) {
+        return res.status(400).json({ success: false, error: 'Invalid paid plan. Use starter or growth.' });
+      }
+      if (!isBillingCycle(billingCycle)) {
+        return res.status(400).json({ success: false, error: 'Invalid billing cycle. Use monthly or annual.' });
+      }
+      const selectedPrice = getPlanPriceConfig(planId, billingCycle);
+      if (!selectedPrice.priceId) {
+        return res.status(500).json({ success: false, error: `Stripe price ID missing for ${planId} ${billingCycle}` });
+      }
       
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
         apiVersion: '2023-10-16',
@@ -52,29 +55,13 @@ router.post('/stripe/create-subscription',
         throw new Error('Failed to create customer');
       }
 
-      const priceIdToUse = priceId || SUBSCRIPTION_PRICES[planId] || `price_${planId}_monthly`;
-
-      let subscriptionPriceId = priceIdToUse;
-      
-      try {
-        await stripe.prices.retrieve(priceIdToUse);
-      } catch {
-        const newPrice = await stripe.prices.create({
-          unit_amount: amount || 4900,
-          currency: 'usd',
-          recurring: { interval: 'month' },
-          product_data: { name: `DIL ${planId.charAt(0).toUpperCase() + planId.slice(1)} Plan` },
-        });
-        subscriptionPriceId = newPrice.id;
-      }
-
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,
-        items: [{ price: subscriptionPriceId }],
+        items: [{ price: selectedPrice.priceId }],
         payment_behavior: 'default_incomplete',
         payment_settings: { save_default_payment_method: 'on_subscription' },
         expand: ['latest_invoice.payment_intent'],
-        metadata: { userId, planId },
+        metadata: { userId, planId, billingCycle },
       });
 
       const invoice = subscription.latest_invoice as Stripe.Invoice;

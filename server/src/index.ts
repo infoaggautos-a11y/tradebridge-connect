@@ -58,6 +58,9 @@ app.use(cors({
 // Request logging
 app.use(morgan('combined', { stream: { write: (msg) => logger.info(msg.trim()) } }));
 
+// Stripe webhook needs raw body for signature verification
+app.use('/api/webhooks/stripe', express.raw({ type: 'application/json', limit: '100kb' }));
+
 // Body parsing with size limits
 app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
