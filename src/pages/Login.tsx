@@ -7,30 +7,46 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Globe } from 'lucide-react';
-import type { UserRole } from '@/data/mockData';
+import { Globe, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, signup } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('member');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
-  const [regRole, setRegRole] = useState<UserRole>('member');
+  const [regName, setRegName] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(email, password, role);
-    navigate(role === 'admin' ? '/admin' : '/dashboard');
+    setLoading(true);
+    const result = await login(email, password);
+    setLoading(false);
+    if (result.error) {
+      toast({ title: 'Login Failed', description: result.error, variant: 'destructive' });
+    } else {
+      navigate('/dashboard');
+    }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(regEmail, regPassword, regRole);
-    navigate(regRole === 'admin' ? '/admin' : '/dashboard');
+    if (regPassword.length < 6) {
+      toast({ title: 'Error', description: 'Password must be at least 6 characters', variant: 'destructive' });
+      return;
+    }
+    setLoading(true);
+    const result = await signup(regEmail, regPassword, regName);
+    setLoading(false);
+    if (result.error) {
+      toast({ title: 'Registration Failed', description: result.error, variant: 'destructive' });
+    } else {
+      toast({ title: 'Check Your Email', description: 'We sent you a verification link. Please verify your email to continue.' });
+    }
   };
 
   return (
@@ -43,11 +59,6 @@ export default function LoginPage() {
             <CardDescription>Access the trade ecosystem</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="mb-4 p-3 bg-muted rounded-md text-xs text-muted-foreground">
-              <strong>Demo accounts:</strong><br />
-              Member: member@dil.com | Admin: admin@dil.com<br />
-              Any password works.
-            </div>
             <Tabs defaultValue="login">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Sign In</TabsTrigger>
@@ -55,36 +66,21 @@ export default function LoginPage() {
               </TabsList>
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4 mt-4">
-                  <div><Label>Email</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="member@dil.com" required /></div>
+                  <div><Label>Email</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" required /></div>
                   <div><Label>Password</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required /></div>
-                  <div>
-                    <Label>Login as</Label>
-                    <Select value={role} onValueChange={v => setRole(v as UserRole)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="member">Business Member</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button type="submit" className="w-full bg-gold text-navy hover:bg-gold-light font-semibold">Sign In</Button>
+                  <Button type="submit" className="w-full bg-gold text-navy hover:bg-gold-light font-semibold" disabled={loading}>
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}Sign In
+                  </Button>
                 </form>
               </TabsContent>
               <TabsContent value="register">
                 <form onSubmit={handleRegister} className="space-y-4 mt-4">
+                  <div><Label>Full Name</Label><Input value={regName} onChange={e => setRegName(e.target.value)} placeholder="John Doe" required /></div>
                   <div><Label>Email</Label><Input type="email" value={regEmail} onChange={e => setRegEmail(e.target.value)} placeholder="you@company.com" required /></div>
-                  <div><Label>Password</Label><Input type="password" value={regPassword} onChange={e => setRegPassword(e.target.value)} placeholder="••••••••" required /></div>
-                  <div>
-                    <Label>Account Type</Label>
-                    <Select value={regRole} onValueChange={v => setRegRole(v as UserRole)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="member">Business Member</SelectItem>
-                        <SelectItem value="admin">Admin (DIL Team)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button type="submit" className="w-full bg-gold text-navy hover:bg-gold-light font-semibold">Create Account</Button>
+                  <div><Label>Password</Label><Input type="password" value={regPassword} onChange={e => setRegPassword(e.target.value)} placeholder="Min 6 characters" required /></div>
+                  <Button type="submit" className="w-full bg-gold text-navy hover:bg-gold-light font-semibold" disabled={loading}>
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}Create Account
+                  </Button>
                 </form>
               </TabsContent>
             </Tabs>
