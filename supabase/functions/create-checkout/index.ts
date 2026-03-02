@@ -12,6 +12,29 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
+const ZOOM_MODEL_PRICING = {
+  starter: {
+    monthly: {
+      priceId: Deno.env.get("STRIPE_STARTER_MONTHLY_PRICE_ID") ?? "price_1T6TJpEPAQKb2xdh60Q4Juwp",
+      amount: 1600,
+    },
+    annual: {
+      priceId: Deno.env.get("STRIPE_STARTER_ANNUAL_PRICE_ID") ?? "price_1T6TJqEPAQKb2xdhETUXy6Sy",
+      amount: 15600,
+    },
+  },
+  growth: {
+    monthly: {
+      priceId: Deno.env.get("STRIPE_GROWTH_MONTHLY_PRICE_ID") ?? "price_1T6TJrEPAQKb2xdh3LmM48gg",
+      amount: 2400,
+    },
+    annual: {
+      priceId: Deno.env.get("STRIPE_GROWTH_ANNUAL_PRICE_ID") ?? "price_1T6TJrEPAQKb2xdhBB3j1taO",
+      amount: 22800,
+    },
+  },
+} as const;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -35,9 +58,16 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { priceId } = await req.json();
-    if (!priceId) throw new Error("priceId is required");
-    logStep("Creating checkout for price", { priceId });
+    const { planTier, billingCycle } = await req.json();
+    if (!planTier || !billingCycle) throw new Error("planTier and billingCycle are required");
+    if (planTier !== "starter" && planTier !== "growth") throw new Error("Invalid plan tier");
+    if (billingCycle !== "monthly" && billingCycle !== "annual") throw new Error("Invalid billing cycle");
+
+    const pricing = ZOOM_MODEL_PRICING[planTier][billingCycle];
+    if (!pricing.priceId) {
+      throw new Error(`Stripe price ID is not configured for ${planTier} ${billingCycle}`);
+    }
+    logStep("Creating checkout", { planTier, billingCycle, priceId: pricing.priceId });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
@@ -54,13 +84,13 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: pricing.priceId, quantity: 1 }],
       mode: "subscription",
       success_url: `${origin}/subscription?success=true`,
       cancel_url: `${origin}/subscription?canceled=true`,
       subscription_data: {
         trial_period_days: 14,
-        metadata: { userId: user.id },
+        metadata: { userId: user.id, planTier, billingCycle },
       },
     });
 

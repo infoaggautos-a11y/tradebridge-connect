@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
+  apiVersion: '2024-12-18.acacia',
 });
 
 const supabaseUrl = process.env.SUPABASE_URL || 'https://wihcbiminnorjuhffedb.supabase.co';
@@ -14,41 +14,6 @@ const PLAN_MAP: Record<string, { name: string; tier: string }> = {
   growth: { name: 'Growth', tier: 'growth' },
   enterprise: { name: 'Enterprise', tier: 'enterprise' },
 };
-
-async function updateProfile(userId: string, updates: Record<string, any>) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .update(updates)
-    .eq('id', userId)
-    .select()
-    .single();
-  
-  if (error) console.error('Profile update error:', error);
-  return data;
-}
-
-async function updateSubscription(stripeSubscriptionId: string, updates: Record<string, any>) {
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .update(updates)
-    .eq('stripe_subscription_id', stripeSubscriptionId)
-    .select()
-    .single();
-  
-  if (error) console.error('Subscription update error:', error);
-  return data;
-}
-
-async function createPayment(payment: any) {
-  const { data, error } = await supabase
-    .from('payments')
-    .insert(payment)
-    .select()
-    .single();
-  
-  if (error) console.error('Payment insert error:', error);
-  return data;
-}
 
 export default async function handler(req: Request) {
   if (req.method !== 'POST') {
@@ -66,6 +31,7 @@ export default async function handler(req: Request) {
       if (webhookSecret && signature) {
         event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
       } else {
+        console.log('No webhook secret, parsing as test event');
         event = JSON.parse(payload) as Stripe.Event;
       }
     } catch (err: any) {
@@ -80,9 +46,9 @@ export default async function handler(req: Request) {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         console.log('Payment succeeded:', paymentIntent.id);
         
-        const { userId, type, planId } = paymentIntent.metadata || {};
+        const { userId, type, planId, subscriptionId } = paymentIntent.metadata || {};
         
-        await createPayment({
+        await supabase.from('payments').insert({
           user_id: userId,
           amount: paymentIntent.amount,
           currency: paymentIntent.currency,
@@ -96,8 +62,31 @@ export default async function handler(req: Request) {
         if (type === 'subscription' && userId && planId) {
           const planInfo = PLAN_MAP[planId];
           if (planInfo) {
-            await updateProfile(userId, { membership_tier: planInfo.tier });
+            await supabase.from('profiles').update({ 
+              membership_tier: planInfo.tier 
+            }).eq('id', userId);
             console.log('User tier updated:', { userId, tier: planInfo.tier });
+          }
+        }
+        
+        if (type === 'wallet_topup' && userId) {
+          const { data: wallet } = await supabase
+            .from('wallets')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('type', 'main')
+            .single();
+          
+          if (wallet) {
+            await supabase.from('wallet_transactions').insert({
+              wallet_id: wallet.id,
+              type: 'deposit',
+              amount: paymentIntent.amount,
+              balance_after: paymentIntent.amount,
+              reference: paymentIntent.id,
+              description: 'Wallet top-up via Stripe',
+              status: 'completed',
+            });
           }
         }
         break;
@@ -116,26 +105,32 @@ export default async function handler(req: Request) {
 
       case 'invoice.paid': {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = (invoice as any).subscription as string;
-        console.log('Invoice paid:', invoice.id, 'subscription:', subscriptionId);
+        console.log('Invoice paid:', invoice.id);
         
+        const subscriptionId = (invoice as any).subscription as string;
         if (subscriptionId) {
           const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-          await updateSubscription(subscriptionId, {
-            status: 'active',
-            current_period_end: periodEnd.toISOString(),
-          });
+          await supabase
+            .from('subscriptions')
+            .update({
+              status: 'active',
+              current_period_end: periodEnd.toISOString(),
+            })
+            .eq('stripe_subscription_id', subscriptionId);
         }
         break;
       }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = (invoice as any).subscription as string;
         console.log('Invoice payment failed:', invoice.id);
         
+        const subscriptionId = (invoice as any).subscription as string;
         if (subscriptionId) {
-          await updateSubscription(subscriptionId, { status: 'past_due' });
+          await supabase
+            .from('subscriptions')
+            .update({ status: 'past_due' })
+            .eq('stripe_subscription_id', subscriptionId);
         }
         break;
       }
@@ -146,14 +141,15 @@ export default async function handler(req: Request) {
         
         const { userId, planId } = subscription.metadata || {};
         
-        await updateSubscription(subscription.id, {
-          status: subscription.status,
-        });
+        await supabase
+          .from('subscriptions')
+          .update({ status: subscription.status })
+          .eq('stripe_subscription_id', subscription.id);
         
         if (userId && planId) {
           const planInfo = PLAN_MAP[planId];
           const tier = subscription.status === 'active' ? planInfo?.tier : 'free';
-          await updateProfile(userId, { membership_tier: tier });
+          await supabase.from('profiles').update({ membership_tier: tier }).eq('id', userId);
         }
         break;
       }
@@ -162,7 +158,10 @@ export default async function handler(req: Request) {
         const subscription = event.data.object as Stripe.Subscription;
         console.log('Subscription cancelled:', subscription.id);
         
-        await updateSubscription(subscription.id, { status: 'canceled' });
+        await supabase
+          .from('subscriptions')
+          .update({ status: 'canceled' })
+          .eq('stripe_subscription_id', subscription.id);
         
         const { data: subData } = await supabase
           .from('subscriptions')
@@ -171,7 +170,7 @@ export default async function handler(req: Request) {
           .single();
         
         if (subData?.user_id) {
-          await updateProfile(subData.user_id, { membership_tier: 'free' });
+          await supabase.from('profiles').update({ membership_tier: 'free' }).eq('id', subData.user_id);
         }
         break;
       }
@@ -179,6 +178,12 @@ export default async function handler(req: Request) {
       default:
         console.log('Unhandled event type:', event.type);
     }
+
+    await supabase.from('webhook_events').insert({
+      event_type: event.type,
+      event_data: event,
+      processed: true,
+    });
 
     return new Response(JSON.stringify({ received: true }), { status: 200 });
   } catch (error: any) {

@@ -2,16 +2,43 @@ import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
+  apiVersion: '2024-12-18.acacia',
 });
 
 const supabaseUrl = process.env.SUPABASE_URL || 'https://wihcbiminnorjuhffedb.supabase.co';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+const ZOOM_MODEL_PRICING = {
+  starter: {
+    monthly: {
+      priceId: process.env.STRIPE_STARTER_MONTHLY_PRICE_ID || 'price_1T6TJpEPAQKb2xdh60Q4Juwp',
+      amount: 1600,
+      interval: 'month' as const,
+    },
+    annual: {
+      priceId: process.env.STRIPE_STARTER_ANNUAL_PRICE_ID || 'price_1T6TJqEPAQKb2xdhETUXy6Sy',
+      amount: 15600,
+      interval: 'year' as const,
+    },
+  },
+  growth: {
+    monthly: {
+      priceId: process.env.STRIPE_GROWTH_MONTHLY_PRICE_ID || 'price_1T6TJrEPAQKb2xdh3LmM48gg',
+      amount: 2400,
+      interval: 'month' as const,
+    },
+    annual: {
+      priceId: process.env.STRIPE_GROWTH_ANNUAL_PRICE_ID || 'price_1T6TJrEPAQKb2xdhBB3j1taO',
+      amount: 22800,
+      interval: 'year' as const,
+    },
+  },
+} as const;
+
 const PLAN_MAP: Record<string, { name: string; tier: string }> = {
-  starter: { name: 'Starter', tier: 'starter' },
-  growth: { name: 'Growth', tier: 'growth' },
+  starter: { name: 'Pro', tier: 'starter' },
+  growth: { name: 'Business', tier: 'growth' },
   enterprise: { name: 'Enterprise', tier: 'enterprise' },
 };
 
@@ -65,10 +92,22 @@ export default async function handler(req: Request) {
 
   try {
     const body = await req.json();
-    const { userId, planId, amount } = body;
+    const { userId, planId, billingCycle = 'annual' } = body;
     
     if (!userId || !planId) {
       return new Response(JSON.stringify({ success: false, error: 'Missing required fields' }), { status: 400 });
+    }
+
+    if (planId !== 'starter' && planId !== 'growth') {
+      return new Response(JSON.stringify({ success: false, error: 'Only Pro and Business are valid Stripe subscription tiers' }), { status: 400 });
+    }
+    if (billingCycle !== 'monthly' && billingCycle !== 'annual') {
+      return new Response(JSON.stringify({ success: false, error: 'billingCycle must be monthly or annual' }), { status: 400 });
+    }
+
+    const selectedPricing = ZOOM_MODEL_PRICING[planId][billingCycle];
+    if (!selectedPricing.priceId) {
+      return new Response(JSON.stringify({ success: false, error: `Stripe price ID missing for ${planId} ${billingCycle}` }), { status: 400 });
     }
 
     const planInfo = PLAN_MAP[planId] || { name: planId, tier: planId };
@@ -85,16 +124,15 @@ export default async function handler(req: Request) {
       console.error('Customer creation error:', err);
     }
 
-    const priceId = `price_${planId}_monthly`;
-    let subscriptionPriceId = priceId;
+    let subscriptionPriceId = selectedPricing.priceId;
     
     try {
-      await stripe.prices.retrieve(priceId);
+      await stripe.prices.retrieve(selectedPricing.priceId);
     } catch {
       const newPrice = await stripe.prices.create({
-        unit_amount: amount || 4900,
+        unit_amount: selectedPricing.amount,
         currency: 'usd',
-        recurring: { interval: 'month' },
+        recurring: { interval: selectedPricing.interval },
         product_data: { name: `DIL ${planId.charAt(0).toUpperCase() + planId.slice(1)} Plan` },
       });
       subscriptionPriceId = newPrice.id;
@@ -106,7 +144,7 @@ export default async function handler(req: Request) {
       payment_behavior: 'default_incomplete',
       payment_settings: { save_default_payment_method: 'on_subscription' },
       expand: ['latest_invoice.payment_intent'],
-      metadata: { userId, planId },
+      metadata: { userId, planId, billingCycle },
     });
 
     const invoice = subscription.latest_invoice as Stripe.Invoice;

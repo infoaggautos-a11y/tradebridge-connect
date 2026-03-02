@@ -42,7 +42,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     name: 'Starter',
     description: 'For small businesses starting with trade',
     tier: 'starter',
-    price: 49,
+    price: 16,
     currency: 'USD',
     billingInterval: 'month',
     features: [
