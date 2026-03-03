@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      escrow_deals: {
+        Row: {
+          amount: number
+          buyer_id: string
+          commission_amount: number | null
+          commission_rate: number
+          created_at: string | null
+          currency: string | null
+          deal_room_id: string
+          disputed_at: string | null
+          funded_at: string | null
+          id: string
+          net_seller_amount: number | null
+          released_at: string | null
+          seller_id: string
+          status: string
+          stripe_payment_intent_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          buyer_id: string
+          commission_amount?: number | null
+          commission_rate: number
+          created_at?: string | null
+          currency?: string | null
+          deal_room_id: string
+          disputed_at?: string | null
+          funded_at?: string | null
+          id?: string
+          net_seller_amount?: number | null
+          released_at?: string | null
+          seller_id: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          buyer_id?: string
+          commission_amount?: number | null
+          commission_rate?: number
+          created_at?: string | null
+          currency?: string | null
+          deal_room_id?: string
+          disputed_at?: string | null
+          funded_at?: string | null
+          id?: string
+          net_seller_amount?: number | null
+          released_at?: string | null
+          seller_id?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -242,6 +299,56 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          id: string
+          metadata: Json | null
+          provider: string | null
+          provider_reference: string | null
+          reference: string | null
+          status: string
+          type: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          metadata?: Json | null
+          provider?: string | null
+          provider_reference?: string | null
+          reference?: string | null
+          status?: string
+          type: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          metadata?: Json | null
+          provider?: string | null
+          provider_reference?: string | null
+          reference?: string | null
+          status?: string
+          type?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
             referencedColumns: ["id"]
           },
         ]
