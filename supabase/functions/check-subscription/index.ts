@@ -86,7 +86,13 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = allSubs[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      try {
+        if (subscription.current_period_end) {
+          subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+        }
+      } catch (e) {
+        logStep("Warning: could not parse period end", { value: subscription.current_period_end });
+      }
       const subPrice = subscription.items.data[0].price;
       productId = subPrice.product;
       status = subscription.status;
