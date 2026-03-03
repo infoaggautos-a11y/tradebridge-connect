@@ -82,6 +82,7 @@ serve(async (req) => {
     const hasActiveSub = allSubs.length > 0;
     let productId = null;
     let subscriptionEnd = null;
+    let tier = 'free';
     let status = null;
 
     if (hasActiveSub) {
@@ -98,16 +99,16 @@ serve(async (req) => {
       status = subscription.status;
       logStep("Active subscription found", { subscriptionId: subscription.id, productId, status });
 
-      const resolvedTier =
+      tier =
         PRODUCT_TO_TIER[String(productId)] ||
         PRICE_TO_TIER[subPrice.id] ||
         'free';
 
       await supabaseClient.from('profiles').update({
-        membership_tier: resolvedTier,
+        membership_tier: tier,
         stripe_customer_id: customerId,
       }).eq('id', user.id);
-      logStep("Profile updated", { tier: resolvedTier, priceId: subPrice.id });
+      logStep("Profile updated", { tier, priceId: subPrice.id });
     } else {
       logStep("No active subscription found");
       await supabaseClient.from('profiles').update({
@@ -121,6 +122,7 @@ serve(async (req) => {
       product_id: productId,
       subscription_end: subscriptionEnd,
       status,
+      tier,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
