@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowUp, CreditCard, Loader2, Settings, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { STRIPE_TIERS, BillingCycle } from '@/config/stripe';
-import { getApiUrl } from '@/config/api';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function SubscriptionPage() {
   const { user, refreshSubscription } = useAuth();
@@ -50,21 +50,12 @@ export default function SubscriptionPage() {
 
     setLoadingPlan(planTier);
     try {
-      const response = await fetch(getApiUrl('/api/subscriptions/stripe/checkout-session'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user?.id,
-          email: user?.email,
-          planTier,
-          billingCycle,
-        }),
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { planTier, billingCycle },
       });
-      const data = await response.json();
 
-      if (!response.ok || !data?.success) {
-        throw new Error(data?.error || 'Could not start checkout');
-      }
+      if (error) throw new Error(error.message || 'Could not start checkout');
+      if (data?.error) throw new Error(data.error);
       if (data?.url) {
         window.location.href = data.url;
       } else {
@@ -85,15 +76,10 @@ export default function SubscriptionPage() {
     }
     setLoadingPortal(true);
     try {
-      const response = await fetch(getApiUrl('/api/subscriptions/stripe/customer-portal'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user?.id }),
-      });
-      const data = await response.json();
-      if (!response.ok || !data?.success) {
-        throw new Error(data?.error || 'Could not open subscription management');
-      }
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+
+      if (error) throw new Error(error.message || 'Could not open subscription management');
+      if (data?.error) throw new Error(data.error);
       if (data?.url) {
         window.location.href = data.url;
       } else {

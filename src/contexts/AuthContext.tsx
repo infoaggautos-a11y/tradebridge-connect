@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { supabase } from '@/integrations/supabase/client';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { MembershipTier } from '@/data/mockData';
-import { API_URL } from '@/config/api';
 
 export type UserRole = 'member' | 'admin';
 
@@ -58,19 +57,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const checkSubscription = async (session: Session | null) => {
-    if (!session) return null;
+  const checkSubscription = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/subscriptions/status/${session.user.id}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) {
-        const text = await response.text();
-        console.error('Subscription check error:', text);
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      if (error) {
+        console.error('Subscription check error:', error.message);
         return null;
       }
-      const data = await response.json();
       return data;
     } catch {
       return null;
@@ -90,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     const [profile, subData] = await Promise.all([
       fetchProfile(session.user.id),
-      checkSubscription(session),
+      checkSubscription(),
     ]);
     setUser(mapSupabaseUser(session.user, profile, subData));
     setLoading(false);
@@ -112,18 +105,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user) return;
     const interval = setInterval(async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const subData = await checkSubscription(session);
-        if (subData) {
-          setUser(prev => prev ? {
-            ...prev,
-            subscribed: !!subData.subscribed,
-            subscriptionEnd: subData.subscription_end || undefined,
-            productId: subData.product_id || undefined,
-            membershipTier: (subData.tier || 'free') as MembershipTier,
-          } : null);
-        }
+      const subData = await checkSubscription();
+      if (subData) {
+        setUser(prev => prev ? {
+          ...prev,
+          subscribed: !!subData.subscribed,
+          subscriptionEnd: subData.subscription_end || undefined,
+          productId: subData.product_id || undefined,
+          membershipTier: (subData.tier || 'free') as MembershipTier,
+        } : null);
       }
     }, 60000);
     return () => clearInterval(interval);
@@ -134,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (session) {
       const [profile, subData] = await Promise.all([
         fetchProfile(session.user.id),
-        checkSubscription(session),
+        checkSubscription(),
       ]);
       setUser(mapSupabaseUser(session.user, profile, subData));
     }
