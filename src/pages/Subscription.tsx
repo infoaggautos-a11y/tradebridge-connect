@@ -11,6 +11,24 @@ import { useToast } from '@/hooks/use-toast';
 import { STRIPE_TIERS, BillingCycle } from '@/config/stripe';
 import { supabase } from '@/integrations/supabase/client';
 
+function formatInvokeError(error: any) {
+  if (!error) return 'Unknown error';
+  const name = error?.name ? String(error.name) : '';
+  const message = error?.message ? String(error.message) : 'Unknown error';
+
+  if (name === 'FunctionsFetchError') {
+    return `Network/URL failure calling Supabase Edge Function: ${message}`;
+  }
+  if (name === 'FunctionsRelayError') {
+    return `Supabase relay error: ${message}`;
+  }
+  if (name === 'FunctionsHttpError') {
+    return `Edge function HTTP error: ${message}`;
+  }
+
+  return message;
+}
+
 export default function SubscriptionPage() {
   const { user, refreshSubscription } = useAuth();
   const navigate = useNavigate();
@@ -54,7 +72,7 @@ export default function SubscriptionPage() {
         body: { planTier, billingCycle },
       });
 
-      if (error) throw new Error(error.message || 'Could not start checkout');
+      if (error) throw error;
       if (data?.error) throw new Error(data.error);
       if (data?.url) {
         window.location.href = data.url;
@@ -62,8 +80,13 @@ export default function SubscriptionPage() {
         throw new Error('No checkout URL returned');
       }
     } catch (error: any) {
-      console.error('Checkout error:', error);
-      toast({ title: 'Error', description: error.message || 'Could not start checkout', variant: 'destructive' });
+      const message = formatInvokeError(error);
+      console.error('Checkout error:', {
+        error,
+        message,
+        supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+      });
+      toast({ title: 'Checkout failed', description: message, variant: 'destructive' });
     } finally {
       setLoadingPlan(null);
     }
@@ -78,7 +101,7 @@ export default function SubscriptionPage() {
     try {
       const { data, error } = await supabase.functions.invoke('customer-portal');
 
-      if (error) throw new Error(error.message || 'Could not open subscription management');
+      if (error) throw error;
       if (data?.error) throw new Error(data.error);
       if (data?.url) {
         window.location.href = data.url;
@@ -86,7 +109,13 @@ export default function SubscriptionPage() {
         throw new Error('No portal URL returned');
       }
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Could not open subscription management', variant: 'destructive' });
+      const message = formatInvokeError(error);
+      console.error('Customer portal error:', {
+        error,
+        message,
+        supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+      });
+      toast({ title: 'Portal failed', description: message, variant: 'destructive' });
     } finally {
       setLoadingPortal(false);
     }

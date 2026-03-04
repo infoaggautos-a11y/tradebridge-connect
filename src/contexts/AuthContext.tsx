@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { MembershipTier } from '@/data/mockData';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 export type UserRole = 'member' | 'admin';
 
 interface User {
@@ -23,6 +25,7 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<{ error?: string }>;
   signup: (email: string, password: string, name: string) => Promise<{ error?: string }>;
+  verifyEmail: (token: string) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean;
@@ -131,19 +134,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: error.message };
-    return {};
+    try {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { error: data.error || 'Login failed' };
+      if (data.session) {
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+      }
+      return {};
+    } catch (error: any) {
+      return { error: error.message };
+    }
   };
 
   const signup = async (email: string, password: string, name: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { name } },
-    });
-    if (error) return { error: error.message };
-    return {};
+    try {
+      const res = await fetch(`${API_URL}/api/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { error: data.error || 'Signup failed' };
+      return {};
+    } catch (error: any) {
+      return { error: error.message };
+    }
+  };
+
+  const verifyEmail = async (token: string) => {
+    try {
+      const res = await fetch(`${API_URL}/api/auth/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { error: data.error || 'Verification failed' };
+      return {};
+    } catch (error: any) {
+      return { error: error.message };
+    }
   };
 
   const logout = async () => {
@@ -156,6 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       login,
       signup,
+      verifyEmail,
       logout,
       isAuthenticated: !!user,
       isAdmin: user?.role === 'admin',

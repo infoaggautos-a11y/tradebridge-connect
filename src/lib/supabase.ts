@@ -1,7 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const stripWrappingQuotes = (value?: string) => value?.replace(/^['"]|['"]$/g, '');
+
+const supabaseUrl = stripWrappingQuotes(import.meta.env.VITE_SUPABASE_URL);
+const supabaseAnonKey = stripWrappingQuotes(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Supabase environment variables are missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.');

@@ -10,6 +10,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import subscriptionRoutes from './routes/subscriptionRoutes.js';
 import payoutRoutes from './routes/payoutRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 import { logger } from './services/logger.js';
 import { processScheduledRenewals } from './services/subscriptionService.js';
@@ -83,6 +84,7 @@ app.get('/health', async (req: Request, res: Response) => {
 });
 
 // API Routes with rate limiting
+app.use('/api/auth', applyRateLimit(apiLimiter), authRoutes);
 app.use('/api/payments', applyRateLimit(apiLimiter), paymentRoutes);
 app.use('/api/subscriptions', applyRateLimit(apiLimiter), subscriptionRoutes);
 app.use('/api/payouts', applyRateLimit(apiLimiter), payoutRoutes);
