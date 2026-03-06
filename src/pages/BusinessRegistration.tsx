@@ -79,25 +79,18 @@ export default function BusinessRegistration() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {credentials && (
-                <div className="bg-muted rounded-lg p-6 text-left space-y-3">
-                  <p className="font-semibold text-foreground">Your Login Credentials:</p>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Email:</span>
-                      <span className="font-mono text-sm font-semibold">{credentials.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">🔑 Password:</span>
-                      <span className="font-mono text-sm font-semibold bg-accent/20 px-2 py-1 rounded">{credentials.temporary_password}</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-3">
-                    ⚠️ Please save these credentials. You can change your password after logging in.
-                  </p>
+              <div className="bg-muted rounded-lg p-6 text-left space-y-3">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-accent" />
+                  <p className="font-semibold text-foreground">Check Your Email</p>
                 </div>
-              )}
+                <p className="text-sm text-muted-foreground">
+                  {successMessage}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  We've sent an invitation to <span className="font-semibold">{form.email}</span> with a link to set your password and access your account.
+                </p>
+              </div>
               <Button
                 onClick={() => window.location.href = '/login'}
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold"
