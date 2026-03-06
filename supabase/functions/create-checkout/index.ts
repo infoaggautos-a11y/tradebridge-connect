@@ -63,7 +63,7 @@ serve(async (req) => {
     if (planTier !== "starter" && planTier !== "growth") throw new Error("Invalid plan tier");
     if (billingCycle !== "monthly" && billingCycle !== "annual") throw new Error("Invalid billing cycle");
 
-    const pricing = ZOOM_MODEL_PRICING[planTier][billingCycle];
+    const pricing = ZOOM_MODEL_PRICING[planTier as keyof typeof ZOOM_MODEL_PRICING][billingCycle as keyof typeof ZOOM_MODEL_PRICING["starter"]];
     if (!pricing.priceId) {
       throw new Error(`Stripe price ID is not configured for ${planTier} ${billingCycle}`);
     }
