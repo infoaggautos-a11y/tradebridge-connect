@@ -30,7 +30,7 @@ export default function BusinessRegistration() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [credentials, setCredentials] = useState<{ email: string; temporary_password: string } | null>(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const [form, setForm] = useState({
     company_name: '', contact_person: '', email: '', phone: '',
@@ -54,9 +54,9 @@ export default function BusinessRegistration() {
       if (data?.error) throw new Error(data.error);
 
       if (data?.existing_account) {
-        toast({ title: 'Registration Saved', description: data.message });
+        setSuccessMessage(data.message);
       } else {
-        setCredentials(data.credentials);
+        setSuccessMessage(data.message || 'Registration successful! Check your email for login instructions.');
       }
       setSuccess(true);
     } catch (err: any) {
@@ -79,25 +79,18 @@ export default function BusinessRegistration() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {credentials && (
-                <div className="bg-muted rounded-lg p-6 text-left space-y-3">
-                  <p className="font-semibold text-foreground">Your Login Credentials:</p>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Email:</span>
-                      <span className="font-mono text-sm font-semibold">{credentials.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">🔑 Password:</span>
-                      <span className="font-mono text-sm font-semibold bg-accent/20 px-2 py-1 rounded">{credentials.temporary_password}</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-3">
-                    ⚠️ Please save these credentials. You can change your password after logging in.
-                  </p>
+              <div className="bg-muted rounded-lg p-6 text-left space-y-3">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-accent" />
+                  <p className="font-semibold text-foreground">Check Your Email</p>
                 </div>
-              )}
+                <p className="text-sm text-muted-foreground">
+                  {successMessage}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  We've sent an invitation to <span className="font-semibold">{form.email}</span> with a link to set your password and access your account.
+                </p>
+              </div>
               <Button
                 onClick={() => window.location.href = '/login'}
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold"

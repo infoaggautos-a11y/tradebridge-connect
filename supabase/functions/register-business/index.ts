@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
@@ -30,15 +30,9 @@ serve(async (req) => {
       });
     }
 
-    // Generate a random password
-    const password = crypto.randomUUID().slice(0, 12) + "Aa1!";
-
-    // Create user account
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { name: contact_person },
+    // Use inviteUserByEmail — this sends an invite email automatically
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+      data: { name: contact_person },
     });
 
     if (authError) {
@@ -61,6 +55,7 @@ serve(async (req) => {
     }
 
     const userId = authData.user.id;
+    console.log(`Invite sent to ${email}, user ID: ${userId}`);
 
     // Save registration with user_id
     const { error: regError } = await supabaseAdmin.from("business_registrations").insert({
@@ -77,14 +72,10 @@ serve(async (req) => {
       name: contact_person,
     }).eq("id", userId);
 
-    // Send login credentials email via Supabase's built-in email (using password reset as delivery)
-    // Since auto-confirm is on, we'll use the invite approach
-    console.log(`Account created for ${email} with temporary password`);
-
     return new Response(JSON.stringify({
       success: true,
-      message: "Registration successful! Your account has been created.",
-      credentials: { email, temporary_password: password },
+      message: "Registration successful! An invitation email has been sent to set up your password.",
+      email_sent: true,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (error: any) {
