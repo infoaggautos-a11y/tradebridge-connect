@@ -39,6 +39,7 @@ import ContactUs from "./pages/ContactUs";
 import NewsEvents from "./pages/NewsEvents";
 import TrainingProgrammes from "./pages/TrainingProgrammes";
 import { PlanProtectedRoute } from "@/components/access/PlanProtectedRoute";
+import BusinessRegistration from "./pages/BusinessRegistration";
 
 const queryClient = new QueryClient();
 
