@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      business_registrations: {
+        Row: {
+          account_created: boolean | null
+          additional_notes: string | null
+          address: string | null
+          annual_revenue: string | null
+          city: string | null
+          company_name: string
+          company_size: string | null
+          contact_person: string
+          country: string
+          created_at: string | null
+          email: string
+          export_markets: string | null
+          id: string
+          import_interests: string | null
+          phone: string | null
+          products_services: string | null
+          registration_number: string | null
+          sector: string | null
+          updated_at: string | null
+          user_id: string | null
+          website: string | null
+        }
+        Insert: {
+          account_created?: boolean | null
+          additional_notes?: string | null
+          address?: string | null
+          annual_revenue?: string | null
+          city?: string | null
+          company_name: string
+          company_size?: string | null
+          contact_person: string
+          country?: string
+          created_at?: string | null
+          email: string
+          export_markets?: string | null
+          id?: string
+          import_interests?: string | null
+          phone?: string | null
+          products_services?: string | null
+          registration_number?: string | null
+          sector?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          website?: string | null
+        }
+        Update: {
+          account_created?: boolean | null
+          additional_notes?: string | null
+          address?: string | null
+          annual_revenue?: string | null
+          city?: string | null
+          company_name?: string
+          company_size?: string | null
+          contact_person?: string
+          country?: string
+          created_at?: string | null
+          email?: string
+          export_markets?: string | null
+          id?: string
+          import_interests?: string | null
+          phone?: string | null
+          products_services?: string | null
+          registration_number?: string | null
+          sector?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       escrow_deals: {
         Row: {
           amount: number
