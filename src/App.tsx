@@ -39,6 +39,7 @@ import ContactUs from "./pages/ContactUs";
 import NewsEvents from "./pages/NewsEvents";
 import TrainingProgrammes from "./pages/TrainingProgrammes";
 import { PlanProtectedRoute } from "@/components/access/PlanProtectedRoute";
+import BusinessRegistration from "./pages/BusinessRegistration";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => (
             <Route path="/events" element={<Events />} />
             <Route path="/events/:id" element={<EventDetail />} />
             <Route path="/membership" element={<Membership />} />
+            <Route path="/register-business" element={<BusinessRegistration />} />
             {/* Member */}
             <Route path="/dashboard" element={<MemberDashboard />} />
             <Route path="/matches" element={<TradeMatch />} />
