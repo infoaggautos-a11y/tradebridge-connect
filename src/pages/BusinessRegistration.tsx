@@ -30,7 +30,7 @@ export default function BusinessRegistration() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [credentials, setCredentials] = useState<{ email: string; temporary_password: string } | null>(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const [form, setForm] = useState({
     company_name: '', contact_person: '', email: '', phone: '',
