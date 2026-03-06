@@ -54,9 +54,9 @@ export default function BusinessRegistration() {
       if (data?.error) throw new Error(data.error);
 
       if (data?.existing_account) {
-        toast({ title: 'Registration Saved', description: data.message });
+        setSuccessMessage(data.message);
       } else {
-        setCredentials(data.credentials);
+        setSuccessMessage(data.message || 'Registration successful! Check your email for login instructions.');
       }
       setSuccess(true);
     } catch (err: any) {
