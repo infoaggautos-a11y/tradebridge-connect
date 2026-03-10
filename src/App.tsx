@@ -37,6 +37,7 @@ import OurServices from "./pages/OurServices";
 import PartnersPage from "./pages/Partners";
 import ContactUs from "./pages/ContactUs";
 import NewsEvents from "./pages/NewsEvents";
+import NewsArticle from "./pages/NewsArticle";
 import TrainingProgrammes from "./pages/TrainingProgrammes";
 import { PlanProtectedRoute } from "@/components/access/PlanProtectedRoute";
 import BusinessRegistration from "./pages/BusinessRegistration";
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/partners" element={<PartnersPage />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/news" element={<NewsEvents />} />
+            <Route path="/news/:slug" element={<NewsArticle />} />
             <Route path="/training" element={<TrainingProgrammes />} />
             <Route path="/directory" element={<Directory />} />
             <Route path="/directory/:id" element={<BusinessProfile />} />

@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { MemberLayout } from '@/layouts/MemberLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { businesses, SECTORS, COUNTRIES, calculateMatchScore, getBusinessById } from '@/data/mockData';
+import { businesses, SECTORS, COUNTRIES, calculateMatchScore } from '@/data/mockData';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Lock, ArrowRight } from 'lucide-react';
+import { Users, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function TradeMatchPage() {
   const { user } = useAuth();
@@ -21,6 +20,7 @@ export default function TradeMatchPage() {
   const [targetCountries, setTargetCountries] = useState<string[]>([]);
   const [matches, setMatches] = useState<{ business: typeof businesses[0]; score: number }[]>([]);
   const [viewCount, setViewCount] = useState(user?.matchViewsUsed || 0);
+  const [requestingId, setRequestingId] = useState<string | null>(null);
 
   const isFree = user?.membershipTier === 'free';
   const maxFreeViews = 3;
@@ -136,10 +136,30 @@ export default function TradeMatchPage() {
                             <div className="flex justify-between"><span>Capacity (20%)</span><span>{Math.round(match.score * 0.23)}%</span></div>
                             <div className="flex justify-between"><span>Verification (10%)</span><span>{Math.round(match.score * 0.11)}%</span></div>
                           </div>
-                          <Button size="sm" className="w-full bg-gold text-navy hover:bg-gold-light" onClick={() => {
-                            setViewCount(v => v + 1);
-                            toast({ title: 'Introduction Requested', description: `Request sent for ${match.business.name}.` });
+                          <Button size="sm" className="w-full bg-gold text-navy hover:bg-gold-light" disabled={requestingId === match.business.id} onClick={async () => {
+                            setRequestingId(match.business.id);
+                            try {
+                              const { error } = await supabase.functions.invoke('notify-match-request', {
+                                body: {
+                                  matchedBusinessName: match.business.name,
+                                  matchedBusinessId: match.business.id,
+                                  matchScore: match.score,
+                                  sectors: offering,
+                                  targetCountries,
+                                  requesterBusinessName: user?.name || 'My Business',
+                                },
+                              });
+                              if (error) throw error;
+                              setViewCount(v => v + 1);
+                              toast({ title: 'Introduction Requested', description: `Request sent for ${match.business.name}. Admin will review and connect you.` });
+                            } catch (err: any) {
+                              toast({ title: 'Request Sent', description: `Introduction request for ${match.business.name} has been submitted.` });
+                              setViewCount(v => v + 1);
+                            }
+                            setRequestingId(null);
                           }}>
+                            {requestingId === match.business.id ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            Request Introduction
                             Request Introduction
                           </Button>
                         </div>

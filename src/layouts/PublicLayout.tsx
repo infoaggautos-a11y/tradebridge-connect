@@ -90,11 +90,14 @@ function DesktopNavItem({ label, items }: MenuGroup) {
         <span className="pointer-events-none absolute bottom-0 left-0 h-[2px] w-full origin-left scale-x-0 bg-[#D4A843] transition-transform duration-200 group-hover:scale-x-100" />
       </button>
 
+      {/* Invisible bridge to prevent gap between trigger and dropdown */}
+      {open && <div className="absolute left-0 top-full z-40 h-4 w-full" />}
       <div
-        className={`absolute left-1/2 top-full z-50 mt-3 w-[220px] -translate-x-1/2 rounded-[10px] border border-[rgba(212,168,67,0.2)] bg-[#111827] p-5 shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-150 ${
+        className={`absolute left-1/2 top-full z-50 pt-1 mt-0 w-[220px] -translate-x-1/2 transition-all duration-150 ${
           open ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-1 opacity-0'
         }`}
       >
+      <div className="rounded-[10px] border border-[rgba(212,168,67,0.2)] bg-[#111827] p-5 shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
         <div className="space-y-1">
           {items.map((item) => (
             <Link
@@ -106,6 +109,7 @@ function DesktopNavItem({ label, items }: MenuGroup) {
             </Link>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );

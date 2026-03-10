@@ -85,22 +85,22 @@ const newsItems = [
     title: 'DIL CEO Drives Historic Nigeria-Italy Economic Pact in Attigliano',
     excerpt: 'The Comune di Attigliano signed a Declaration of Intent with the Associazione "Italian Nigerian Business", solidifying international cooperation commitments.',
     date: 'December 1, 2025',
-    image: 'https://www.daunointegrated.com/wp-content/uploads/2025/12/WhatsApp-Image-2025-11-14-at-11.45.41-768x576.jpeg',
-    link: 'https://www.daunointegrated.com/dauno-integrated-ltd-ceo-amb-hon-mrs-okorokwo-nikiruka-drives-historic-nigeria-italy-economic-pact-in-attigliano-abuja-attigliano-november-14-2025/',
+    image: '/images/news/attigliano-pact.jpg',
+    slug: 'attigliano-pact',
   },
   {
     title: 'Nigeria and Italy Strengthen Ties in Innovation, Science & Technology',
     excerpt: 'The Honourable Minister of Innovation, Science, and Technology, Chief Uche Nnaji, met with His Excellency, Lacopo Foti, the Acting Ambassador of Italy to Nigeria.',
     date: 'March 16, 2025',
-    image: 'https://www.daunointegrated.com/wp-content/uploads/2025/03/FB_IMG_1741620284839.jpg',
-    link: 'https://www.daunointegrated.com/elementor-676/',
+    image: '/images/news/business-development.jpg',
+    slug: 'innovation-science-technology',
   },
   {
     title: 'Business Mission to Confindustria Reggio Calabria, Italy',
     excerpt: 'Theme: "Trade, Investment and Strategic Partnership Opportunities" — A landmark business mission fostering Nigeria-Italy bilateral trade.',
     date: 'July 31, 2023',
-    image: 'https://www.daunointegrated.com/wp-content/uploads/2023/07/DAUNO-2-768x542.jpg',
-    link: 'https://www.daunointegrated.com/business-mission-to-confindrustria-reggio-calabria-italy/',
+    image: '/images/news/reggio-calabria.jpg',
+    slug: 'reggio-calabria-mission',
   },
 ];
 
@@ -374,13 +374,13 @@ export default function LandingPage() {
               <h2 className="text-3xl font-bold text-foreground">Latest from DIL</h2>
               <p className="text-muted-foreground mt-2">Trade news, events coverage, and partnership announcements.</p>
             </div>
-            <Button variant="outline" onClick={() => window.open('https://www.daunointegrated.com/events-news/', '_blank')}>
+            <Button variant="outline" onClick={() => navigate('/news')}>
               View All News <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {newsItems.map((news, i) => (
-              <Card key={i} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group" onClick={() => window.open(news.link, '_blank')}>
+              <Card key={i} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group" onClick={() => navigate(`/news/${news.slug}`)}>
                 <div className="relative h-48 overflow-hidden">
                   <img src={news.image} alt={news.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
