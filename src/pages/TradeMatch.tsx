@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { MemberLayout } from '@/layouts/MemberLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { businesses, SECTORS, COUNTRIES, calculateMatchScore, getBusinessById } from '@/data/mockData';
+import { businesses, SECTORS, COUNTRIES, calculateMatchScore } from '@/data/mockData';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Lock, ArrowRight } from 'lucide-react';
+import { Users, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function TradeMatchPage() {
   const { user } = useAuth();
