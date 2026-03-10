@@ -37,6 +37,7 @@ import OurServices from "./pages/OurServices";
 import PartnersPage from "./pages/Partners";
 import ContactUs from "./pages/ContactUs";
 import NewsEvents from "./pages/NewsEvents";
+import NewsArticle from "./pages/NewsArticle";
 import TrainingProgrammes from "./pages/TrainingProgrammes";
 import { PlanProtectedRoute } from "@/components/access/PlanProtectedRoute";
 import BusinessRegistration from "./pages/BusinessRegistration";
