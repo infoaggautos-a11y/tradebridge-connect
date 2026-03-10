@@ -146,7 +146,7 @@ export default function TradeMatchPage() {
                                   matchScore: match.score,
                                   sectors: offering,
                                   targetCountries,
-                                  requesterBusinessName: user?.businessName || user?.name || 'My Business',
+                                  requesterBusinessName: user?.name || 'My Business',
                                 },
                               });
                               if (error) throw error;
