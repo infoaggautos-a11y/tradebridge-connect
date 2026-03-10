@@ -143,6 +143,54 @@ export type Database = {
         }
         Relationships: []
       }
+      match_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          match_score: number
+          matched_business_id: string | null
+          matched_business_name: string
+          requester_business_name: string
+          requester_email: string
+          requester_id: string
+          sectors: string[] | null
+          status: string
+          target_countries: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          match_score?: number
+          matched_business_id?: string | null
+          matched_business_name: string
+          requester_business_name: string
+          requester_email: string
+          requester_id: string
+          sectors?: string[] | null
+          status?: string
+          target_countries?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          match_score?: number
+          matched_business_id?: string | null
+          matched_business_name?: string
+          requester_business_name?: string
+          requester_email?: string
+          requester_id?: string
+          sectors?: string[] | null
+          status?: string
+          target_countries?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
