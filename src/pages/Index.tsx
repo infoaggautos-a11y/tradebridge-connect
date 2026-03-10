@@ -374,13 +374,13 @@ export default function LandingPage() {
               <h2 className="text-3xl font-bold text-foreground">Latest from DIL</h2>
               <p className="text-muted-foreground mt-2">Trade news, events coverage, and partnership announcements.</p>
             </div>
-            <Button variant="outline" onClick={() => window.open('https://www.daunointegrated.com/events-news/', '_blank')}>
+            <Button variant="outline" onClick={() => navigate('/news')}>
               View All News <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {newsItems.map((news, i) => (
-              <Card key={i} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group" onClick={() => window.open(news.link, '_blank')}>
+              <Card key={i} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group" onClick={() => navigate(`/news/${news.slug}`)}>
                 <div className="relative h-48 overflow-hidden">
                   <img src={news.image} alt={news.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />

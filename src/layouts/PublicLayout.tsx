@@ -110,6 +110,7 @@ function DesktopNavItem({ label, items }: MenuGroup) {
           ))}
         </div>
       </div>
+      </div>
     </div>
   );
 }
