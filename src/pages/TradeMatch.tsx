@@ -20,6 +20,7 @@ export default function TradeMatchPage() {
   const [targetCountries, setTargetCountries] = useState<string[]>([]);
   const [matches, setMatches] = useState<{ business: typeof businesses[0]; score: number }[]>([]);
   const [viewCount, setViewCount] = useState(user?.matchViewsUsed || 0);
+  const [requestingId, setRequestingId] = useState<string | null>(null);
 
   const isFree = user?.membershipTier === 'free';
   const maxFreeViews = 3;
