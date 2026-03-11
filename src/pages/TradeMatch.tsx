@@ -160,7 +160,6 @@ export default function TradeMatchPage() {
                           }}>
                             {requestingId === match.business.id ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                             Request Introduction
-                            Request Introduction
                           </Button>
                         </div>
                       </div>
