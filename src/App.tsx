@@ -4,8 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import AuthCallback from "./pages/AuthCallback";
+import ResetPassword from "./pages/ResetPassword";
 import Directory from "./pages/Directory";
 import BusinessProfile from "./pages/BusinessProfile";
 import Events from "./pages/Events";
@@ -55,6 +58,8 @@ const App = () => (
             {/* Public */}
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/services" element={<OurServices />} />
             <Route path="/partners" element={<PartnersPage />} />
@@ -68,49 +73,31 @@ const App = () => (
             <Route path="/events/:id" element={<EventDetail />} />
             <Route path="/membership" element={<Membership />} />
             <Route path="/register-business" element={<BusinessRegistration />} />
-            {/* Member */}
-            <Route path="/dashboard" element={<MemberDashboard />} />
-            <Route path="/matches" element={<TradeMatch />} />
-            <Route path="/subscription" element={<Subscription />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/verification" element={<KYCVerification />} />
-            <Route path="/disputes" element={<Disputes />} />
-            <Route
-              path="/deals"
-              element={
-                <PlanProtectedRoute requiredTier="starter" feature="deal-room">
-                  <DealRoom />
-                </PlanProtectedRoute>
-              }
-            />
-            <Route path="/wallet" element={<Wallet />} />
-            <Route
-              path="/advisor"
-              element={
-                <PlanProtectedRoute requiredTier="growth" feature="ai-advisor">
-                  <AIAdvisor />
-                </PlanProtectedRoute>
-              }
-            />
-            <Route
-              path="/intelligence"
-              element={
-                <PlanProtectedRoute requiredTier="starter" feature="trade-intelligence">
-                  <TradeIntelligence />
-                </PlanProtectedRoute>
-              }
-            />
-            {/* Admin */}
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/businesses" element={<AdminBusinesses />} />
-            <Route path="/admin/events" element={<AdminEvents />} />
-            <Route path="/admin/matches" element={<AdminMatches />} />
-            <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
-            <Route path="/admin/activity" element={<AdminActivity />} />
-            <Route path="/admin/kyc" element={<AdminKYCQueue />} />
-            <Route path="/admin/disputes" element={<AdminDisputes />} />
-            <Route path="/admin/marketing" element={<MarketingAutomation />} />
-            <Route path="/admin/finance" element={<FinanceDashboard />} />
+
+            {/* Member (protected) */}
+            <Route path="/dashboard" element={<ProtectedRoute><MemberDashboard /></ProtectedRoute>} />
+            <Route path="/matches" element={<ProtectedRoute><TradeMatch /></ProtectedRoute>} />
+            <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/verification" element={<ProtectedRoute><KYCVerification /></ProtectedRoute>} />
+            <Route path="/disputes" element={<ProtectedRoute><Disputes /></ProtectedRoute>} />
+            <Route path="/deals" element={<ProtectedRoute><PlanProtectedRoute requiredTier="starter" feature="deal-room"><DealRoom /></PlanProtectedRoute></ProtectedRoute>} />
+            <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
+            <Route path="/advisor" element={<ProtectedRoute><PlanProtectedRoute requiredTier="growth" feature="ai-advisor"><AIAdvisor /></PlanProtectedRoute></ProtectedRoute>} />
+            <Route path="/intelligence" element={<ProtectedRoute><PlanProtectedRoute requiredTier="starter" feature="trade-intelligence"><TradeIntelligence /></PlanProtectedRoute></ProtectedRoute>} />
+
+            {/* Admin (protected + admin required) */}
+            <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/businesses" element={<ProtectedRoute requireAdmin><AdminBusinesses /></ProtectedRoute>} />
+            <Route path="/admin/events" element={<ProtectedRoute requireAdmin><AdminEvents /></ProtectedRoute>} />
+            <Route path="/admin/matches" element={<ProtectedRoute requireAdmin><AdminMatches /></ProtectedRoute>} />
+            <Route path="/admin/subscriptions" element={<ProtectedRoute requireAdmin><AdminSubscriptions /></ProtectedRoute>} />
+            <Route path="/admin/activity" element={<ProtectedRoute requireAdmin><AdminActivity /></ProtectedRoute>} />
+            <Route path="/admin/kyc" element={<ProtectedRoute requireAdmin><AdminKYCQueue /></ProtectedRoute>} />
+            <Route path="/admin/disputes" element={<ProtectedRoute requireAdmin><AdminDisputes /></ProtectedRoute>} />
+            <Route path="/admin/marketing" element={<ProtectedRoute requireAdmin><MarketingAutomation /></ProtectedRoute>} />
+            <Route path="/admin/finance" element={<ProtectedRoute requireAdmin><FinanceDashboard /></ProtectedRoute>} />
+
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>

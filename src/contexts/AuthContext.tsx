@@ -32,11 +32,25 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-const ADMIN_EMAILS = ['admin@dil.com', 'admin@diltradebridge.com'];
+async function checkIsAdmin(userId: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.rpc('has_role', {
+      _user_id: userId,
+      _role: 'admin',
+    });
+    if (error) {
+      console.error('Role check error:', error.message);
+      return false;
+    }
+    return !!data;
+  } catch {
+    return false;
+  }
+}
 
-function mapSupabaseUser(supaUser: SupabaseUser, profile?: any, subData?: any): User {
+function mapSupabaseUser(supaUser: SupabaseUser, profile?: any, subData?: any, isAdminRole?: boolean): User {
   const email = supaUser.email || '';
-  const role: UserRole = ADMIN_EMAILS.includes(email) ? 'admin' : 'member';
+  const role: UserRole = isAdminRole ? 'admin' : 'member';
   const tier = (subData?.tier || profile?.membership_tier || 'free') as MembershipTier;
 
   return {
@@ -81,11 +95,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    const [profile, subData] = await Promise.all([
+    const [profile, subData, isAdmin] = await Promise.all([
       fetchProfile(session.user.id),
       checkSubscription(),
+      checkIsAdmin(session.user.id),
     ]);
-    setUser(mapSupabaseUser(session.user, profile, subData));
+    setUser(mapSupabaseUser(session.user, profile, subData, isAdmin));
     setLoading(false);
   };
 
@@ -101,7 +116,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Auto-refresh subscription every 60s
   useEffect(() => {
     if (!user) return;
     const interval = setInterval(async () => {
@@ -122,11 +136,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshSubscription = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      const [profile, subData] = await Promise.all([
+      const [profile, subData, isAdmin] = await Promise.all([
         fetchProfile(session.user.id),
         checkSubscription(),
+        checkIsAdmin(session.user.id),
       ]);
-      setUser(mapSupabaseUser(session.user, profile, subData));
+      setUser(mapSupabaseUser(session.user, profile, subData, isAdmin));
     }
   };
 
