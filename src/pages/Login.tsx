@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Globe, Loader2 } from 'lucide-react';
+import { Globe, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -23,6 +23,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [showForgot, setShowForgot] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRegPassword, setShowRegPassword] = useState(false);
 
   // Redirect if already logged in
   if (isAuthenticated) {
@@ -99,7 +101,13 @@ export default function LoginPage() {
                 <TabsContent value="login">
                   <form onSubmit={handleLogin} className="space-y-4 mt-4">
                     <div><Label>Email</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" required /></div>
-                    <div><Label>Password</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required /></div>
+                    <div className="relative">
+                      <Label>Password</Label>
+                      <Input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required className="pr-10" />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-7">
+                        {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                      </button>
+                    </div>
                     <Button type="submit" className="w-full bg-[hsl(var(--gold))] text-[hsl(var(--navy))] hover:opacity-90 font-semibold" disabled={loading}>
                       {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}Sign In
                     </Button>
@@ -112,7 +120,13 @@ export default function LoginPage() {
                   <form onSubmit={handleRegister} className="space-y-4 mt-4">
                     <div><Label>Full Name</Label><Input value={regName} onChange={e => setRegName(e.target.value)} placeholder="John Doe" required /></div>
                     <div><Label>Email</Label><Input type="email" value={regEmail} onChange={e => setRegEmail(e.target.value)} placeholder="you@company.com" required /></div>
-                    <div><Label>Password</Label><Input type="password" value={regPassword} onChange={e => setRegPassword(e.target.value)} placeholder="Min 6 characters" required /></div>
+                    <div className="relative">
+                      <Label>Password</Label>
+                      <Input type={showRegPassword ? 'text' : 'password'} value={regPassword} onChange={e => setRegPassword(e.target.value)} placeholder="Min 6 characters" required className="pr-10" />
+                      <button type="button" onClick={() => setShowRegPassword(!showRegPassword)} className="absolute right-2 top-7">
+                        {showRegPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                      </button>
+                    </div>
                     <Button type="submit" className="w-full bg-[hsl(var(--gold))] text-[hsl(var(--navy))] hover:opacity-90 font-semibold" disabled={loading}>
                       {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}Create Account
                     </Button>

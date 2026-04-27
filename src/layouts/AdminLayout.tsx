@@ -11,6 +11,7 @@ import {
 
 const adminLinks = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
+  { title: 'Users', url: '/admin/users', icon: Users },
   { title: 'Businesses', url: '/admin/businesses', icon: Building2 },
   { title: 'Matches', url: '/admin/matches', icon: Users },
   { title: 'Events', url: '/admin/events', icon: CalendarDays },

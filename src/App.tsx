@@ -26,6 +26,7 @@ import AdminBusinesses from "./pages/AdminBusinesses";
 import AdminEvents from "./pages/AdminEvents";
 import AdminMatches from "./pages/AdminMatches";
 import AdminSubscriptions from "./pages/AdminSubscriptions";
+import AdminUsers from "./pages/AdminUsers";
 import AdminActivity from "./pages/AdminActivity";
 import AdminKYCQueue from "./pages/AdminKYCQueue";
 import AdminDisputes from "./pages/AdminDisputes";
@@ -95,6 +96,7 @@ const App = () => (
 
             {/* Admin (protected + admin required) */}
             <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
             <Route path="/admin/businesses" element={<ProtectedRoute requireAdmin><AdminBusinesses /></ProtectedRoute>} />
             <Route path="/admin/events" element={<ProtectedRoute requireAdmin><AdminEvents /></ProtectedRoute>} />
             <Route path="/admin/matches" element={<ProtectedRoute requireAdmin><AdminMatches /></ProtectedRoute>} />

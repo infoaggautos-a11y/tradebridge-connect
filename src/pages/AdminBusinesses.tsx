@@ -8,10 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, CheckCircle, XCircle, Eye, Building2, ClipboardList, Loader2, Mail, Phone, MapPin, Globe, RefreshCw } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Eye, Building2, ClipboardList, Loader2, Mail, Phone, MapPin, Globe, RefreshCw, Trash2 } from 'lucide-react';
 
 const verificationColors: Record<string, string> = {
   basic: 'bg-muted text-muted-foreground',
@@ -50,6 +50,8 @@ export default function AdminBusinessesPage() {
   const [loadingRegs, setLoadingRegs] = useState(false);
   const [regSearch, setRegSearch] = useState('');
   const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchRegistrations = async () => {
     setLoadingRegs(true);
@@ -70,6 +72,21 @@ export default function AdminBusinessesPage() {
   useEffect(() => {
     fetchRegistrations();
   }, []);
+
+  const handleDeleteReg = async () => {
+    if (!selectedReg) return;
+    setDeleting(true);
+    const { error } = await supabase.from('business_registrations').delete().eq('id', selectedReg.id);
+    setDeleting(false);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Success', description: 'Business registration deleted' });
+      setShowDeleteDialog(false);
+      setSelectedReg(null);
+      fetchRegistrations();
+    }
+  };
 
   const filtered = businesses.filter(b => {
     const matchesSearch = !search || b.name.toLowerCase().includes(search.toLowerCase());
@@ -156,9 +173,14 @@ export default function AdminBusinessesPage() {
                             {reg.created_at ? new Date(reg.created_at).toLocaleDateString() : '—'}
                           </TableCell>
                           <TableCell>
-                            <Button size="sm" variant="ghost" onClick={() => setSelectedReg(reg)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
+                            <div className="flex gap-1">
+                              <Button size="sm" variant="ghost" onClick={() => setSelectedReg(reg)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button size="sm" variant="ghost" className="text-red-600" onClick={() => { setSelectedReg(reg); setShowDeleteDialog(true); }}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -277,6 +299,24 @@ export default function AdminBusinessesPage() {
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDeleteDialog} onOpenChange={() => setShowDeleteDialog(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Business Registration</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {selectedReg?.company_name}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDeleteReg} disabled={deleting}>
+              {deleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Delete
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </AdminLayout>

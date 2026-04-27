@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -16,6 +16,11 @@ export default function ProfilePage() {
   const [name, setName] = useState(user?.name || '');
   const [saving, setSaving] = useState(false);
   const [business, setBusiness] = useState<any>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -33,6 +38,31 @@ export default function ProfilePage() {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: 'Profile Updated', description: 'Your profile has been saved.' });
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!newPassword || !confirmPassword) {
+      toast({ title: 'Error', description: 'Please fill in all password fields', variant: 'destructive' });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: 'Error', description: 'New passwords do not match', variant: 'destructive' });
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast({ title: 'Error', description: 'Password must be at least 6 characters', variant: 'destructive' });
+      return;
+    }
+    setChangingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setChangingPassword(false);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Password Updated', description: 'Your password has been changed successfully.' });
+      setNewPassword('');
+      setConfirmPassword('');
     }
   };
 
@@ -54,6 +84,31 @@ export default function ProfilePage() {
             </div>
             <Button onClick={handleSave} disabled={saving} className="bg-[hsl(var(--gold))] text-[hsl(var(--navy))] hover:opacity-90">
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}Save Changes
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Change Password</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4">
+              <div className="relative">
+                <Label>New Password</Label>
+                <Input type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} className="pr-10" />
+                <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-2 top-7">
+                  {showNewPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                </button>
+              </div>
+              <div className="relative">
+                <Label>Confirm New Password</Label>
+                <Input type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="pr-10" />
+                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-2 top-7">
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                </button>
+              </div>
+            </div>
+            <Button onClick={handleChangePassword} disabled={changingPassword} className="bg-[hsl(var(--gold))] text-[hsl(var(--navy))] hover:opacity-90">
+              {changingPassword ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}Change Password
             </Button>
           </CardContent>
         </Card>

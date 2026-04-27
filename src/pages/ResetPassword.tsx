@@ -7,13 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +42,13 @@ export default function ResetPassword() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleReset} className="space-y-4">
-              <div><Label>New Password</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min 6 characters" required /></div>
+              <div className="relative">
+                <Label>New Password</Label>
+                <Input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="Min 6 characters" required className="pr-10" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-7">
+                  {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                </button>
+              </div>
               <Button type="submit" className="w-full bg-[hsl(var(--gold))] text-[hsl(var(--navy))] hover:opacity-90 font-semibold" disabled={loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}Update Password
               </Button>

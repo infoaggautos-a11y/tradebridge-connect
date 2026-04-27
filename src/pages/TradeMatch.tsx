@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { MemberLayout } from '@/layouts/MemberLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { businesses, SECTORS, COUNTRIES, calculateMatchScore } from '@/data/mockData';
+import { businesses, SECTORS, calculateMatchScore } from '@/data/mockData';
+import { ALL_COUNTRIES } from '@/data/countries';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -74,7 +75,7 @@ export default function TradeMatchPage() {
               <CardHeader><CardTitle className="text-lg">Target Countries</CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {COUNTRIES.map(c => (
+                  {ALL_COUNTRIES.map(c => (
                     <Badge key={c} variant={targetCountries.includes(c) ? 'default' : 'outline'}
                       className={`cursor-pointer ${targetCountries.includes(c) ? 'bg-gold text-navy' : ''}`}
                       onClick={() => toggleSector(c, targetCountries, setTargetCountries)}>{c}</Badge>

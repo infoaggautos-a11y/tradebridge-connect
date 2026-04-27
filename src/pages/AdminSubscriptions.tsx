@@ -5,7 +5,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { RefreshCw, Loader2, Trash2 } from 'lucide-react';
 
 interface SubRow {
   id: string;
@@ -19,8 +21,12 @@ interface SubRow {
 }
 
 export default function AdminSubscriptionsPage() {
+  const { toast } = useToast();
   const [subs, setSubs] = useState<SubRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedSub, setSelectedSub] = useState<SubRow | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchSubs = async () => {
     setLoading(true);
@@ -33,6 +39,21 @@ export default function AdminSubscriptionsPage() {
   };
 
   useEffect(() => { fetchSubs(); }, []);
+
+  const handleDeleteSub = async () => {
+    if (!selectedSub) return;
+    setDeleting(true);
+    const { error } = await supabase.from('subscriptions').delete().eq('id', selectedSub.id);
+    setDeleting(false);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Success', description: 'Subscription deleted' });
+      setShowDeleteDialog(false);
+      setSelectedSub(null);
+      fetchSubs();
+    }
+  };
 
   const active = subs.filter(s => s.status === 'active' && s.plan_id !== 'free').length;
   const paid = subs.filter(s => s.plan_id !== 'free').length;
@@ -66,6 +87,7 @@ export default function AdminSubscriptionsPage() {
                     <TableHead>Status</TableHead>
                     <TableHead>Period End</TableHead>
                     <TableHead>Created</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -85,6 +107,11 @@ export default function AdminSubscriptionsPage() {
                       </TableCell>
                       <TableCell className="text-sm">{sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString() : '-'}</TableCell>
                       <TableCell className="text-sm">{sub.created_at ? new Date(sub.created_at).toLocaleDateString() : '-'}</TableCell>
+                      <TableCell>
+                        <Button size="sm" variant="ghost" className="h-7 text-red-600" onClick={() => { setSelectedSub(sub); setShowDeleteDialog(true); }}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -93,6 +120,24 @@ export default function AdminSubscriptionsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={showDeleteDialog} onOpenChange={() => setShowDeleteDialog(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Subscription</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this subscription? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDeleteSub} disabled={deleting}>
+              {deleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
