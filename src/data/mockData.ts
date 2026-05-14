@@ -102,7 +102,7 @@ export const SECTORS = [
 ];
 
 export const COUNTRIES = [
-  'Nigeria', 'Italy', 'Ghana', 'Kenya', 'South Africa',
+  'Nigeria', 'Italy', 'Kenya', 'South Africa',
   'United Kingdom', 'Germany', 'France', 'United States', 'China',
   'Guinea-Bissau',
 ];
@@ -153,7 +153,7 @@ export const businesses: Business[] = [
   {
     id: 'b6', name: 'Dauno Integrated Ltd', country: 'Nigeria', sectors: ['Agriculture & Food', 'Logistics & Shipping'],
     products: ['Trade Facilitation', 'Agro-Logistics', 'Export Documentation', 'Commodity Sourcing'], exportCapacity: 'Project-based',
-    certifications: ['CAC'], minOrderQty: 'N/A', preferredMarkets: ['Italy', 'Ghana', 'South Africa'],
+    certifications: ['CAC'], minOrderQty: 'N/A', preferredMarkets: ['Italy', 'South Africa'],
     verificationLevel: 'verified', tradeReadinessScore: 70, profileCompleteness: 78,
     description: 'Asokoro-based integrated services company providing end-to-end trade facilitation, logistics coordination, and export support for Nigerian businesses entering international markets.',
     yearEstablished: 2019, employees: '10-25', contactEmail: 'daunointegrated@gmail.com',
@@ -345,7 +345,7 @@ export const businesses: Business[] = [
   {
     id: 'b30', name: 'PiMason Tech', country: 'Italy', sectors: ['Technology'],
     products: ['Agri-Tech Solutions', 'Supply Chain Software', 'IoT Sensors', 'Data Analytics'], exportCapacity: 'Unlimited (Digital)',
-    certifications: ['ISO 27001'], minOrderQty: 'N/A', preferredMarkets: ['Nigeria', 'Ghana', 'Kenya'],
+    certifications: ['ISO 27001'], minOrderQty: 'N/A', preferredMarkets: ['Nigeria', 'Kenya'],
     verificationLevel: 'basic', tradeReadinessScore: 65, profileCompleteness: 70,
     description: 'Castelfranco Veneto-based Italian IT company developing agricultural technology and supply chain digitization tools for Africa-Europe trade corridors.',
     yearEstablished: 2019, employees: '10-25', contactEmail: 'Paolomason@gmail.com',
@@ -354,7 +354,7 @@ export const businesses: Business[] = [
   {
     id: 'b31', name: 'Napoli Trade Solutions', country: 'Italy', sectors: ['Manufacturing', 'Agriculture & Food'],
     products: ['Olive Oil', 'Pasta Processing Equipment', 'Food Packaging'], exportCapacity: '200 MT/month',
-    certifications: ['ISO 9001', 'EU Organic'], minOrderQty: '5 MT', preferredMarkets: ['Nigeria', 'Ghana', 'Kenya'],
+    certifications: ['ISO 9001', 'EU Organic'], minOrderQty: '5 MT', preferredMarkets: ['Nigeria', 'Kenya'],
     verificationLevel: 'verified', tradeReadinessScore: 82, profileCompleteness: 88,
     description: 'Italian food processing and equipment manufacturer looking to expand into West African markets.',
     yearEstablished: 2012, employees: '100-250', contactEmail: 'trade@napolitrade.it',
@@ -370,7 +370,7 @@ export const businesses: Business[] = [
   {
     id: 'b33', name: 'Roma Pharma International', country: 'Italy', sectors: ['Healthcare & Pharma'],
     products: ['Generic Medicines', 'Medical Equipment', 'Diagnostic Kits'], exportCapacity: '100,000 units/month',
-    certifications: ['EU GMP', 'WHO Prequalification'], minOrderQty: '1,000 units', preferredMarkets: ['Nigeria', 'Ghana', 'Kenya'],
+    certifications: ['EU GMP', 'WHO Prequalification'], minOrderQty: '1,000 units', preferredMarkets: ['Nigeria', 'Kenya'],
     verificationLevel: 'premium', tradeReadinessScore: 93, profileCompleteness: 99,
     description: 'Italian pharmaceutical company expanding into African healthcare markets.',
     yearEstablished: 1995, employees: '500+', contactEmail: 'africa@romapharma.it',
@@ -378,7 +378,7 @@ export const businesses: Business[] = [
   {
     id: 'b34', name: 'Torino Logistics SpA', country: 'Italy', sectors: ['Logistics & Shipping'],
     products: ['Freight Forwarding', 'Customs Clearance', 'Warehousing'], exportCapacity: 'N/A',
-    certifications: ['AEO Certified', 'ISO 28000'], minOrderQty: 'N/A', preferredMarkets: ['Nigeria', 'Ghana', 'South Africa'],
+    certifications: ['AEO Certified', 'ISO 28000'], minOrderQty: 'N/A', preferredMarkets: ['Nigeria', 'South Africa'],
     verificationLevel: 'premium', tradeReadinessScore: 85, profileCompleteness: 90,
     description: 'Italian logistics company specializing in Africa-Europe trade corridors.',
     yearEstablished: 2001, employees: '100-250', contactEmail: 'africa@torinologistics.it',
@@ -391,14 +391,7 @@ export const businesses: Business[] = [
     description: 'Kenyan horticultural exporter with cold chain logistics to European markets.',
     yearEstablished: 2011, employees: '100-250', contactEmail: 'sales@nairobifresh.ke',
   },
-  {
-    id: 'b36', name: 'Accra Textiles Co.', country: 'Ghana', sectors: ['Textiles & Fashion'],
-    products: ['Kente Cloth', 'African Print Fabric', 'Ready-to-Wear'], exportCapacity: '10,000 units/month',
-    certifications: ['Fair Trade'], minOrderQty: '500 units', preferredMarkets: ['Italy', 'United Kingdom', 'United States'],
-    verificationLevel: 'verified', tradeReadinessScore: 71, profileCompleteness: 80,
-    description: 'Premium Ghanaian textiles producer combining traditional craftsmanship with modern fashion.',
-    yearEstablished: 2015, employees: '25-50', contactEmail: 'sales@accratextiles.gh',
-  },
+  // (Ghana entry removed)
   {
     id: 'b37', name: 'Johannesburg Mining Corp', country: 'South Africa', sectors: ['Minerals & Mining'],
     products: ['Gold', 'Platinum', 'Chrome Ore'], exportCapacity: '500 MT/month',
@@ -410,7 +403,7 @@ export const businesses: Business[] = [
   {
     id: 'b38', name: 'Florence Ceramics International', country: 'Italy', sectors: ['Manufacturing', 'Construction Materials'],
     products: ['Porcelain Tiles', 'Sanitary Ware', 'Decorative Ceramics'], exportCapacity: '50,000 sqm/month',
-    certifications: ['CE Mark', 'ISO 9001'], minOrderQty: '500 sqm', preferredMarkets: ['Nigeria', 'Ghana', 'Kenya'],
+    certifications: ['CE Mark', 'ISO 9001'], minOrderQty: '500 sqm', preferredMarkets: ['Nigeria', 'Kenya'],
     verificationLevel: 'verified', tradeReadinessScore: 80, profileCompleteness: 85,
     description: 'Italian ceramics manufacturer expanding into African construction market.',
     yearEstablished: 2007, employees: '100-250', contactEmail: 'export@florenceceramics.it',
@@ -419,90 +412,132 @@ export const businesses: Business[] = [
 
 // ===== EVENTS =====
 export const events: TradeEvent[] = [
+  // ===== UPCOMING =====
   {
-    id: 'e1', title: 'Nigeria-Italy Trade Summit 2026', type: 'trade-mission',
-    description: 'The premier annual gathering connecting Nigerian and Italian businesses for bilateral trade opportunities. Features keynote speakers, B2B matchmaking sessions, and networking dinners.',
-    date: '2026-04-15', endDate: '2026-04-17', location: 'Abuja, Nigeria',
+    id: 'e1', title: 'Expo Tokyo 2026', type: 'conference',
+    description: 'Major international exhibition for agriculture, trade and innovation. DIL is mobilising a Nigerian delegation to showcase agro-products and innovation to Asian and global buyers.',
+    date: '2026-10-07', endDate: '2026-10-09', location: 'Makuhari Messe, Tokyo, Japan',
     agenda: [
-      { time: '09:00', title: 'Opening Ceremony & Keynotes', speaker: 'Hon. Minister of Trade' },
-      { time: '11:00', title: 'B2B Matchmaking Sessions' },
-      { time: '14:00', title: 'Sector Focus: Agriculture & Food Processing', speaker: 'Dr. Amara Osei' },
-      { time: '16:00', title: 'Panel: Navigating EU-Nigeria Trade Regulations' },
-      { time: '19:00', title: 'Networking Dinner' },
+      { time: '09:00', title: 'Delegation Arrival & Briefing' },
+      { time: '11:00', title: 'Pavilion Opening & Country Showcase' },
+      { time: '14:00', title: 'B2B Matchmaking with Asian Buyers' },
+      { time: '16:00', title: 'Innovation & AgriTech Roundtable' },
     ],
     speakers: [
-      { name: 'Dr. Amara Osei', role: 'Director of Trade Policy', company: 'ECOWAS Commission' },
-      { name: 'Marco Bianchi', role: 'President', company: 'Italy-Africa Business Council' },
-      { name: 'Chief Ade Ogunleye', role: 'CEO', company: 'Nigerian Export Promotion Council' },
+      { name: 'DIL Trade Mission Lead', role: 'Head of Delegation', company: 'Dauno Integrated Ltd' },
     ],
-    sponsors: ['Access Bank', 'ENI', 'Nigerian Ports Authority'],
+    sponsors: ['Nigerian Export Promotion Council', 'Confindustria'],
     ticketTiers: [
-      { tier: 'free', price: 0, label: 'Observer Pass', perks: ['Access to keynotes', 'Digital program'] },
-      { tier: 'standard', price: 500, label: 'Delegate Pass', perks: ['All sessions', 'B2B matchmaking', 'Lunch included', 'Networking dinner'] },
-      { tier: 'vip', price: 2000, label: 'VIP Delegate', perks: ['All delegate perks', 'Private meetings', 'Airport transfer', 'Hotel arrangement'] },
+      { tier: 'standard', price: 1800, label: 'Delegate', perks: ['Pavilion access', 'B2B sessions', 'Group transport'] },
+      { tier: 'vip', price: 3500, label: 'VIP Delegate', perks: ['All delegate perks', 'Premium hotel', 'Private meetings'] },
     ],
-    registrations: 234, capacity: 500, isPast: false,
+    registrations: 38, capacity: 80, isPast: false,
   },
   {
-    id: 'e2', title: 'West Africa AgriTech Workshop', type: 'workshop',
-    description: 'Hands-on workshop exploring technology solutions for modernizing agricultural supply chains across West Africa.',
-    date: '2026-05-20', endDate: '2026-05-21', location: 'Lagos, Nigeria',
+    id: 'e2', title: 'Italy Study Tour — Innovation & Cultural Exposure', type: 'delegation',
+    description: 'Curated study tour across Italian innovation hubs and cultural institutions. Designed for executives, founders and policy makers seeking exposure to Italian business models and craftsmanship.',
+    date: '2026-08-27', endDate: '2026-08-29', location: 'Italy (multi-city)',
     agenda: [
-      { time: '09:00', title: 'Smart Farming Technologies', speaker: 'Prof. Ngozi Eze' },
-      { time: '11:00', title: 'Supply Chain Digitization Workshop' },
-      { time: '14:00', title: 'Cold Chain Solutions for Export', speaker: 'Roberto Verdi' },
-      { time: '16:00', title: 'Funding Opportunities in AgriTech' },
+      { time: '09:00', title: 'Innovation District Visit' },
+      { time: '13:00', title: 'Cultural Exchange Lunch' },
+      { time: '15:00', title: 'Industry Roundtable & Site Tour' },
     ],
     speakers: [
-      { name: 'Prof. Ngozi Eze', role: 'Head of AgriTech', company: 'University of Nigeria' },
-      { name: 'Roberto Verdi', role: 'CTO', company: 'AgriChain Italia' },
+      { name: 'Italian Industry Hosts', role: 'Various', company: 'Confindustria network' },
     ],
-    sponsors: ['World Bank', 'FAO'],
+    sponsors: ['Dauno Integrated Ltd', 'Confindustria'],
     ticketTiers: [
-      { tier: 'free', price: 0, label: 'Virtual Pass', perks: ['Live stream access', 'Digital materials'] },
-      { tier: 'standard', price: 200, label: 'In-Person', perks: ['All sessions', 'Workshop materials', 'Certificate'] },
+      { tier: 'standard', price: 1200, label: 'Participant', perks: ['Tour access', 'Group transport', 'Lunches'] },
+      { tier: 'vip', price: 2500, label: 'Premium Participant', perks: ['All perks', 'Private guide', 'Premium accommodation'] },
     ],
-    registrations: 89, capacity: 150, isPast: false,
+    registrations: 22, capacity: 40, isPast: false,
   },
   {
-    id: 'e3', title: 'Italy Trade Delegation to Ghana', type: 'delegation',
-    description: 'A curated delegation of Italian manufacturers visiting Ghanaian producers for direct sourcing partnerships.',
-    date: '2026-06-10', endDate: '2026-06-14', location: 'Accra & Kumasi, Ghana',
+    id: 'e3', title: 'Italy B2B Trade Event — July', type: 'trade-mission',
+    description: 'B2B networking and trade event in Italy connecting Nigerian SMEs with Italian buyers and industrial partners.',
+    date: '2026-07-18', endDate: '2026-07-19', location: 'Italy',
     agenda: [
       { time: '09:00', title: 'Welcome & Country Briefing' },
-      { time: '11:00', title: 'Factory Visits: Textiles & Cocoa' },
-      { time: '14:00', title: 'Investment Climate Presentation', speaker: 'Ghana Investment Promotion Centre' },
-      { time: '16:00', title: 'One-on-One Business Meetings' },
+      { time: '11:00', title: 'Structured B2B Meetings' },
+      { time: '15:00', title: 'Sector Panels & Networking' },
     ],
     speakers: [
-      { name: 'Kwame Asante', role: 'CEO', company: 'Ghana Chamber of Commerce' },
-      { name: 'Giulia Romano', role: 'Trade Attaché', company: 'Italian Embassy, Accra' },
+      { name: 'DIL B2B Coordinator', role: 'Lead', company: 'Dauno Integrated Ltd' },
     ],
-    sponsors: ['Ghana Export Authority', 'Intesa Sanpaolo'],
+    sponsors: ['Confindustria', 'Italian Embassy, Abuja'],
     ticketTiers: [
-      { tier: 'standard', price: 1500, label: 'Delegate', perks: ['All site visits', 'Transport', 'Accommodation', 'B2B meetings'] },
-      { tier: 'vip', price: 3000, label: 'Premium Delegate', perks: ['All delegate perks', 'Private car', 'Premium hotel', 'Priority meetings'] },
+      { tier: 'standard', price: 800, label: 'Delegate', perks: ['B2B meetings', 'Lunch', 'Materials'] },
+      { tier: 'vip', price: 1800, label: 'VIP Delegate', perks: ['Priority matching', 'Networking dinner'] },
     ],
-    registrations: 42, capacity: 60, isPast: false,
+    registrations: 31, capacity: 70, isPast: false,
   },
   {
-    id: 'e4', title: 'AfCFTA Trade Conference 2025', type: 'conference',
-    description: 'Exploring opportunities under the African Continental Free Trade Area for intra-African and Africa-EU commerce.',
-    date: '2025-11-08', endDate: '2025-11-10', location: 'Lagos, Nigeria',
+    id: 'e4', title: 'Italy B2B Trade Event — Early July', type: 'trade-mission',
+    description: 'First-week-of-July business-to-business trade event in Italy. Targeted matchmaking between Nigerian exporters and Italian SMEs.',
+    date: '2026-07-02', endDate: '2026-07-04', location: 'Italy',
     agenda: [
-      { time: '09:00', title: 'AfCFTA Implementation Progress', speaker: 'AfCFTA Secretariat' },
-      { time: '11:00', title: 'Cross-Border Trade Facilitation' },
-      { time: '14:00', title: 'Digital Trade Infrastructure' },
+      { time: '09:00', title: 'Opening & Briefing' },
+      { time: '11:00', title: 'B2B Sessions' },
+      { time: '14:00', title: 'Sector Roundtables' },
     ],
     speakers: [
-      { name: 'Wamkele Mene', role: 'Secretary General', company: 'AfCFTA Secretariat' },
+      { name: 'DIL Trade Lead', role: 'Coordinator', company: 'Dauno Integrated Ltd' },
     ],
-    sponsors: ['African Development Bank', 'EU Commission'],
+    sponsors: ['Confindustria'],
     ticketTiers: [
-      { tier: 'free', price: 0, label: 'Virtual', perks: ['Live stream'] },
-      { tier: 'standard', price: 300, label: 'In-Person', perks: ['All sessions', 'Networking'] },
+      { tier: 'standard', price: 800, label: 'Delegate', perks: ['B2B meetings', 'Lunch'] },
     ],
-    registrations: 412, capacity: 500, isPast: true,
+    registrations: 18, capacity: 60, isPast: false,
+  },
+
+  // ===== PAST =====
+  {
+    id: 'e5', title: 'Nigeria-Italy Investment Submission Mission', type: 'trade-mission',
+    description: 'High-level investment submission mission connecting Nigerian government and private-sector stakeholders with Italian investors.',
+    date: '2019-09-15', endDate: '2019-09-20', location: 'Italy',
+    agenda: [],
+    speakers: [],
+    sponsors: ['Dauno Integrated Ltd'],
+    ticketTiers: [],
+    registrations: 120, capacity: 120, isPast: true,
+  },
+  {
+    id: 'e6', title: 'Nigeria-Italy Agricultural Promotion Programme', type: 'trade-mission',
+    description: 'Agricultural promotion programme showcasing Nigerian agro-products and exploring partnership pathways into the Italian market.',
+    date: '2019-06-10', endDate: '2019-06-14', location: 'Italy',
+    agenda: [],
+    speakers: [],
+    sponsors: ['Nigerian Export Promotion Council'],
+    ticketTiers: [],
+    registrations: 95, capacity: 100, isPast: true,
+  },
+  {
+    id: 'e7', title: 'Trade & Investment Programme — Rome', type: 'trade-mission',
+    description: 'Trade and investment programme delegation in Rome focused on bilateral cooperation, production and investment opportunities.',
+    date: '2022-05-12', endDate: '2022-05-15', location: 'Rome, Italy',
+    agenda: [], speakers: [], sponsors: ['Dauno Integrated Ltd'], ticketTiers: [],
+    registrations: 70, capacity: 80, isPast: true,
+  },
+  {
+    id: 'e8', title: 'Nigerian Trade Delegation to Italy', type: 'delegation',
+    description: 'International trade delegation visiting Italian institutions, chambers and industrial partners.',
+    date: '2022-07-19', endDate: '2022-07-22', location: 'Italy',
+    agenda: [], speakers: [], sponsors: ['Dauno Integrated Ltd'], ticketTiers: [],
+    registrations: 60, capacity: 60, isPast: true,
+  },
+  {
+    id: 'e9', title: 'Business Mission to Confindustria Reggio Calabria', type: 'trade-mission',
+    description: 'Theme: Trade, Investment and Strategic Partnership Opportunities. A landmark business mission fostering Nigeria–Italy bilateral trade.',
+    date: '2023-07-31', endDate: '2023-08-02', location: 'Reggio Calabria, Italy',
+    agenda: [], speakers: [], sponsors: ['Confindustria Reggio Calabria'], ticketTiers: [],
+    registrations: 55, capacity: 60, isPast: true,
+  },
+  {
+    id: 'e10', title: '100 Years of Confindustria — Celebration', type: 'conference',
+    description: 'Centenary celebration of Confindustria. Networking and industry-relations event hosting Nigerian and Italian business leaders.',
+    date: '2024-05-04', endDate: '2024-05-04', location: 'Italy',
+    agenda: [], speakers: [], sponsors: ['Confindustria'], ticketTiers: [],
+    registrations: 200, capacity: 200, isPast: true,
   },
 ];
 

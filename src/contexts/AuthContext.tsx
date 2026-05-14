@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (payments && payments.length > 0) {
         const payment = payments[0];
-        const plan = payment.metadata?.plan || 'starter';
+        const plan = (payment.metadata as any)?.plan || 'starter';
         return { subscribed: true, tier: plan, subscription_end: null, product_id: null };
       }
 
@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (payments && payments.length > 0) {
         const payment = payments[0];
-        const plan = payment.metadata?.plan || 'starter';
+        const plan = (payment.metadata as any)?.plan || 'starter';
         return { subscribed: true, tier: plan, subscription_end: null, product_id: null };
       }
 
