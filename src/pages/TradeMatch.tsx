@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Users, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { MultiSelect } from '@/components/ui/multi-select';
 
 export default function TradeMatchPage() {
   const { user } = useAuth();
@@ -36,10 +37,6 @@ export default function TradeMatchPage() {
     setStep('results');
   };
 
-  const toggleSector = (sector: string, list: string[], setList: (v: string[]) => void) => {
-    setList(list.includes(sector) ? list.filter(s => s !== sector) : [...list, sector]);
-  };
-
   return (
     <MemberLayout>
       <div className="max-w-4xl mx-auto">
@@ -50,37 +47,22 @@ export default function TradeMatchPage() {
             <Card>
               <CardHeader><CardTitle className="text-lg">What does your business offer?</CardTitle></CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {SECTORS.map(s => (
-                    <Badge key={s} variant={offering.includes(s) ? 'default' : 'outline'}
-                      className={`cursor-pointer ${offering.includes(s) ? 'bg-gold text-navy' : ''}`}
-                      onClick={() => toggleSector(s, offering, setOffering)}>{s}</Badge>
-                  ))}
-                </div>
+                <MultiSelect options={SECTORS} selected={offering} onChange={setOffering}
+                  placeholder="Select sectors you offer" searchPlaceholder="Search sectors..." />
               </CardContent>
             </Card>
             <Card>
               <CardHeader><CardTitle className="text-lg">What are you seeking?</CardTitle></CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {SECTORS.map(s => (
-                    <Badge key={s} variant={seeking.includes(s) ? 'default' : 'outline'}
-                      className={`cursor-pointer ${seeking.includes(s) ? 'bg-gold text-navy' : ''}`}
-                      onClick={() => toggleSector(s, seeking, setSeeking)}>{s}</Badge>
-                  ))}
-                </div>
+                <MultiSelect options={SECTORS} selected={seeking} onChange={setSeeking}
+                  placeholder="Select sectors you are seeking" searchPlaceholder="Search sectors..." />
               </CardContent>
             </Card>
             <Card>
               <CardHeader><CardTitle className="text-lg">Target Countries</CardTitle></CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {ALL_COUNTRIES.map(c => (
-                    <Badge key={c} variant={targetCountries.includes(c) ? 'default' : 'outline'}
-                      className={`cursor-pointer ${targetCountries.includes(c) ? 'bg-gold text-navy' : ''}`}
-                      onClick={() => toggleSector(c, targetCountries, setTargetCountries)}>{c}</Badge>
-                  ))}
-                </div>
+                <MultiSelect options={ALL_COUNTRIES} selected={targetCountries} onChange={setTargetCountries}
+                  placeholder="Select target countries" searchPlaceholder="Search countries..." />
               </CardContent>
             </Card>
             <Button className="bg-gold text-navy hover:bg-gold-light font-semibold" onClick={runMatching}
