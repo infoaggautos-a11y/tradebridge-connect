@@ -31,6 +31,41 @@ serve(async (req) => {
     const user = userData.user;
     const body = await req.json();
     const { matchedBusinessName, matchedBusinessId, matchScore, sectors, targetCountries, requesterBusinessName } = body;
+    const resolvedRequesterBusinessName = requesterBusinessName || "Unknown Business";
+    const hiddenDirectoryNames = ["unknown business", "my business", "hnery", "taxcode", "floodgate system"];
+
+    if (!hiddenDirectoryNames.includes(resolvedRequesterBusinessName.trim().toLowerCase())) {
+      const { data: existingRegistration, error: registrationLookupError } = await supabaseAdmin
+        .from("business_registrations")
+        .select("id")
+        .or(`user_id.eq.${user.id},email.eq.${user.email}`)
+        .maybeSingle();
+
+      if (registrationLookupError) {
+        console.error("Registration lookup error:", registrationLookupError);
+      }
+
+      if (!existingRegistration) {
+        const { error: registrationInsertError } = await supabaseAdmin
+          .from("business_registrations")
+          .insert({
+            company_name: resolvedRequesterBusinessName,
+            contact_person: resolvedRequesterBusinessName,
+            email: user.email,
+            country: "Nigeria",
+            sector: sectors?.[0] || "Other",
+            products_services: Array.isArray(sectors) ? sectors.join(", ") : null,
+            export_markets: Array.isArray(targetCountries) ? targetCountries.join(", ") : null,
+            additional_notes: "Business created from TradeMatch request.",
+            user_id: user.id,
+            account_created: true,
+          });
+
+        if (registrationInsertError) {
+          console.error("Registration insert error:", registrationInsertError);
+        }
+      }
+    }
 
     // Save match request to database
     const { data: matchRequest, error: insertError } = await supabaseAdmin
@@ -38,7 +73,7 @@ serve(async (req) => {
       .insert({
         requester_id: user.id,
         requester_email: user.email,
-        requester_business_name: requesterBusinessName || "Unknown Business",
+        requester_business_name: resolvedRequesterBusinessName,
         matched_business_name: matchedBusinessName,
         matched_business_id: matchedBusinessId,
         match_score: matchScore || 0,
