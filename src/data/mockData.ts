@@ -87,6 +87,7 @@ export const SECTORS = [
   'Manufacturing',
   'Textiles & Fashion',
   'Oil & Gas',
+  'Super Market',
   'Technology',
   'Construction Materials',
   'Minerals & Mining',
@@ -174,7 +175,7 @@ export const businesses: Business[] = [
     yearEstablished: 2018, employees: '25-50', contactEmail: 'abdullahijaafarabba@gmail.com',
   },
   {
-    id: 'b9', name: 'FRANJOE Edibles Ltd', country: 'Nigeria', sectors: ['Agriculture & Food', 'Food Processing'],
+    id: 'b9', name: 'FRANJOE Edibles Ltd', country: 'Nigeria', sectors: ['Agriculture & Food', 'Food Processing', 'Super Market'],
     products: ['Processed Garri', 'Dried Vegetables', 'Spice Blends', 'Packaged Snacks'], exportCapacity: '60 MT/month',
     certifications: ['NAFDAC', 'CAC'], minOrderQty: '5 MT', preferredMarkets: ['Italy', 'United Kingdom', 'United States'],
     verificationLevel: 'verified', tradeReadinessScore: 71, profileCompleteness: 78,

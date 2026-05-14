@@ -71,15 +71,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const checkSubscription = async () => {
+  const checkSubscription = async (userId: string) => {
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
-      if (error) {
-        console.error('Subscription check error:', error.message);
-        return null;
+      if (error) throw new Error(error.message);
+
+      if (data?.subscribed) return data;
+
+      // Fallback: check payments table for verified bank transfer payment
+      const { data: payments } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('type', 'subscription')
+        .eq('status', 'verified')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (payments && payments.length > 0) {
+        const payment = payments[0];
+        const plan = payment.metadata?.plan || 'starter';
+        return { subscribed: true, tier: plan, subscription_end: null, product_id: null };
       }
-      return data;
-    } catch {
+
+      return { subscribed: false, tier: 'free', subscription_end: null, product_id: null };
+    } catch (err: any) {
+      console.error('Subscription check error:', err.message);
+
+      // On error, fallback to payments table
+      const { data: payments } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('type', 'subscription')
+        .eq('status', 'verified')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (payments && payments.length > 0) {
+        const payment = payments[0];
+        const plan = payment.metadata?.plan || 'starter';
+        return { subscribed: true, tier: plan, subscription_end: null, product_id: null };
+      }
+
       return null;
     }
   };
@@ -97,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     const [profile, subData, isAdmin] = await Promise.all([
       fetchProfile(session.user.id),
-      checkSubscription(),
+      checkSubscription(session.user.id),
       checkIsAdmin(session.user.id),
     ]);
     setUser(mapSupabaseUser(session.user, profile, subData, isAdmin));
@@ -117,9 +151,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
     const interval = setInterval(async () => {
-      const subData = await checkSubscription();
+      const subData = await checkSubscription(user.id);
       if (subData) {
         setUser(prev => prev ? {
           ...prev,
@@ -138,7 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (session) {
       const [profile, subData, isAdmin] = await Promise.all([
         fetchProfile(session.user.id),
-        checkSubscription(),
+        checkSubscription(session.user.id),
         checkIsAdmin(session.user.id),
       ]);
       setUser(mapSupabaseUser(session.user, profile, subData, isAdmin));

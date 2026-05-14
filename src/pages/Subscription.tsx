@@ -1,98 +1,123 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { MemberLayout } from '@/layouts/MemberLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { membershipPlans } from '@/data/mockData';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowUp, CreditCard, Loader2, Settings, Check } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2, CheckCircle, Clock, XCircle, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { STRIPE_TIERS, BillingCycle } from '@/config/stripe';
 import { supabase } from '@/integrations/supabase/client';
+import BankTransferInfo from '@/components/payments/BankTransferInfo';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+const PLAN_PRICES: Record<string, { monthly: number; annual: number }> = {
+  starter: { monthly: 16, annual: 156 },
+  growth: { monthly: 24, annual: 228 },
+};
 
 export default function SubscriptionPage() {
   const { user, refreshSubscription } = useAuth();
-  const navigate = useNavigate();
   const { toast } = useToast();
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const [loadingPortal, setLoadingPortal] = useState(false);
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>('annual');
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
+  const [selectedPlan, setSelectedPlan] = useState<string>('starter');
+  const [transferRef, setTransferRef] = useState('');
+  const [transferDate, setTransferDate] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [payments, setPayments] = useState<any[]>([]);
+  const [loadingPayments, setLoadingPayments] = useState(true);
 
   const currentTier = user?.membershipTier || 'free';
+  const currentPlan = membershipPlans.find(p => p.tier === currentTier) || membershipPlans[0];
+
+  const price = PLAN_PRICES[selectedPlan];
+  const totalAmount = billingCycle === 'annual' ? price.annual : price.monthly;
+  const periodLabel = billingCycle === 'annual' ? '/year' : '/month';
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('success') === 'true') {
-      toast({ title: 'Payment Successful!', description: 'Your subscription is now active. It may take a moment to update.' });
-      window.history.replaceState({}, '', '/subscription');
-      refreshSubscription();
-    }
-    if (params.get('canceled') === 'true') {
-      toast({ title: 'Checkout Canceled', description: 'You can subscribe anytime.' });
-      window.history.replaceState({}, '', '/subscription');
-    }
-  }, [toast, refreshSubscription]);
+    if (!user?.id) return;
+    const fetchPayments = async () => {
+      setLoadingPayments(true);
+      const { data } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('type', 'subscription')
+        .order('created_at', { ascending: false });
+      setPayments(data || []);
+      setLoadingPayments(false);
+    };
+    fetchPayments();
+  }, [user?.id]);
 
-  const handleSubscribe = async (planTier: string) => {
-    if (planTier === 'free') return;
-    if (planTier === 'enterprise') {
-      navigate('/contact');
+  const handleSubmitVerification = async () => {
+    if (!transferRef.trim()) {
+      toast({ title: 'Reference required', description: 'Enter your bank transfer reference.', variant: 'destructive' });
       return;
     }
     if (!user?.id) {
-      toast({ title: 'Authentication required', description: 'Please log in and try again.', variant: 'destructive' });
+      toast({ title: 'Authentication required', description: 'Please log in first.', variant: 'destructive' });
       return;
     }
 
-    const stripeConfig = STRIPE_TIERS[planTier as keyof typeof STRIPE_TIERS];
-    if (!stripeConfig) return;
-
-    setLoadingPlan(planTier);
+    setSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { planTier, billingCycle },
+      const { error } = await supabase.from('payments').insert({
+        user_id: user.id,
+        amount: totalAmount,
+        currency: 'USD',
+        reference: transferRef.trim(),
+        status: 'pending',
+        type: 'subscription',
+        provider: 'bank_transfer',
+        metadata: { plan: selectedPlan, billingCycle, planName: selectedPlan },
       });
-
-      if (error) throw new Error(error.message || 'Could not start checkout');
-      if (data?.error) throw new Error(data.error);
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error('No checkout URL returned');
-      }
-    } catch (error: any) {
-      console.error('Checkout error:', error);
-      toast({ title: 'Error', description: error.message || 'Could not start checkout', variant: 'destructive' });
+      if (error) throw error;
+      toast({
+        title: 'Verification submitted',
+        description: 'Your payment details have been submitted for verification. We will confirm shortly.',
+      });
+      setTransferRef('');
+      setTransferDate('');
+      const { data } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('type', 'subscription')
+        .order('created_at', { ascending: false });
+      setPayments(data || []);
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Could not submit verification.', variant: 'destructive' });
     } finally {
-      setLoadingPlan(null);
+      setSubmitting(false);
     }
   };
 
-  const handleManageSubscription = async () => {
-    if (!user?.id) {
-      toast({ title: 'Authentication required', description: 'Please log in and try again.', variant: 'destructive' });
-      return;
-    }
-    setLoadingPortal(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('customer-portal');
-
-      if (error) throw new Error(error.message || 'Could not open subscription management');
-      if (data?.error) throw new Error(data.error);
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error('No portal URL returned');
-      }
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Could not open subscription management', variant: 'destructive' });
-    } finally {
-      setLoadingPortal(false);
+  const statusIcon = (status: string) => {
+    switch (status) {
+      case 'verified': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'rejected': return <XCircle className="h-4 w-4 text-red-500" />;
+      default: return <Clock className="h-4 w-4 text-yellow-500" />;
     }
   };
 
-  const currentPlan = membershipPlans.find(p => p.tier === currentTier) || membershipPlans[0];
+  const statusLabel = (status: string) => {
+    switch (status) {
+      case 'verified': return 'Verified';
+      case 'rejected': return 'Rejected';
+      default: return 'Pending';
+    }
+  };
+
+  const statusClass = (status: string) => {
+    switch (status) {
+      case 'verified': return 'bg-green-100 text-green-800 border-green-200';
+      case 'rejected': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    }
+  };
 
   return (
     <MemberLayout>
@@ -106,26 +131,18 @@ export default function SubscriptionPage() {
             <div>
               <div className="text-2xl font-bold">{currentPlan.name}</div>
               <div className="text-muted-foreground">
-                {currentTier === 'free' ? 'Free forever' : user?.subscribed ? `Active until ${new Date(user.subscriptionEnd || '').toLocaleDateString()}` : 'No active subscription'}
+                {currentTier === 'free' ? 'Free forever — upgrade to access premium features' : `${currentPlan.name} plan active`}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge className="bg-gold/20 text-gold-dark">{currentPlan.name}</Badge>
-              {user?.subscribed && (
-                <Button variant="outline" size="sm" onClick={handleManageSubscription} disabled={loadingPortal}>
-                  {loadingPortal ? <Loader2 className="h-3 w-3 animate-spin" /> : <Settings className="h-3 w-3 mr-1" />}
-                  Manage
-                </Button>
-              )}
-            </div>
+            <Badge className="bg-gold/20 text-gold-dark">{currentPlan.name}</Badge>
           </CardContent>
         </Card>
 
-        {/* Available Plans */}
+        {/* Choose Plan */}
         <Card>
           <CardHeader>
-            <CardTitle>Available Plans</CardTitle>
-            <CardDescription>Choose the plan that best fits your business needs. All paid plans include a 14-day free trial.</CardDescription>
+            <CardTitle>Choose a Plan</CardTitle>
+            <CardDescription>Select a plan and pay via bank transfer. We will verify and activate your subscription.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex justify-center mb-6">
@@ -142,80 +159,138 @@ export default function SubscriptionPage() {
                   className={`px-4 py-2 text-sm rounded-md transition ${billingCycle === 'annual' ? 'bg-gold text-navy font-semibold' : 'text-muted-foreground'}`}
                   onClick={() => setBillingCycle('annual')}
                 >
-                  Annual - Save 20%
+                  Annual — Save ~20%
                 </button>
               </div>
             </div>
-            <div className="grid md:grid-cols-4 gap-4">
-              {membershipPlans.map((plan) => {
-                const stripeConfig = STRIPE_TIERS[plan.tier as keyof typeof STRIPE_TIERS];
-                const isCurrent = plan.tier === currentTier;
-                const cyclePrice = stripeConfig
-                  ? (billingCycle === 'annual' ? stripeConfig.annualMonthlyPrice : stripeConfig.monthlyPrice)
-                  : null;
-                const price = cyclePrice !== null ? `$${cyclePrice}` : plan.tier === 'free' ? 'Free' : 'Custom';
 
+            <div className="grid md:grid-cols-2 gap-4 mb-6">
+              {['starter', 'growth'].map(tier => {
+                const plan = membershipPlans.find(p => p.tier === tier)!;
+                const p = PLAN_PRICES[tier];
+                const total = billingCycle === 'annual' ? p.annual : p.monthly;
+                const perMonth = billingCycle === 'annual' ? Math.round(p.annual / 12) : p.monthly;
+                const isSelected = selectedPlan === tier;
                 return (
-                  <div key={plan.tier} className={`p-4 rounded-lg border ${isCurrent ? 'border-gold bg-gold/5' : ''} ${plan.highlighted ? 'ring-2 ring-gold' : ''}`}>
-                    <div className="font-semibold mb-1">{plan.name}</div>
-                    <div className="text-xs text-muted-foreground mb-1">{plan.subtitle}</div>
-                    <div className="text-lg font-bold mb-1">{price}{stripeConfig ? '/mo' : ''}</div>
-                    {stripeConfig && billingCycle === 'annual' && (
-                      <div className="text-[11px] text-muted-foreground mb-1">Billed as ${stripeConfig.annualPrice}/year</div>
-                    )}
-                    {plan.trialAvailable && <div className="text-xs text-green-600 mb-2">14-day free trial</div>}
-
-                    <ul className="text-xs text-muted-foreground space-y-1 mb-3">
-                      {plan.features.slice(0, 4).map((f, i) => (
-                        <li key={i} className="flex items-start gap-1">
-                          <Check className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    {isCurrent ? (
-                      <Badge variant="outline">Current Plan</Badge>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant={plan.highlighted ? 'default' : 'outline'}
-                        className="w-full"
-                        disabled={loadingPlan === plan.tier}
-                        onClick={() => handleSubscribe(plan.tier)}
-                      >
-                        {loadingPlan === plan.tier ? (
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                        ) : plan.tier === 'enterprise' ? (
-                          'Contact Sales'
-                        ) : plan.tier === 'free' ? (
-                          'Free'
-                        ) : (
-                          <>
-                            <ArrowUp className="h-3 w-3 mr-1" />Start Free Trial
-                          </>
-                        )}
-                      </Button>
-                    )}
-                  </div>
+                  <Card
+                    key={tier}
+                    className={`cursor-pointer transition-all ${isSelected ? 'ring-2 ring-gold border-gold' : 'hover:border-gold/50'}`}
+                    onClick={() => setSelectedPlan(tier)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-semibold text-lg">{plan.name}</h3>
+                        {isSelected && <CheckCircle className="h-5 w-5 text-gold" />}
+                      </div>
+                      <div className="text-2xl font-bold mb-1">
+                        ${total}<span className="text-sm font-normal text-muted-foreground">{billingCycle === 'annual' ? '/year' : '/month'}</span>
+                      </div>
+                      {billingCycle === 'annual' && (
+                        <div className="text-xs text-muted-foreground mb-2">${perMonth}/mo billed annually</div>
+                      )}
+                      <ul className="text-xs text-muted-foreground space-y-1 mt-3">
+                        {plan.features.slice(0, 5).map((f, i) => (
+                          <li key={i} className="flex items-start gap-1">
+                            <Check className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
                 );
               })}
             </div>
           </CardContent>
         </Card>
 
-        {/* Payment Info */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardHeader><CardTitle className="text-blue-800">Payment & Billing</CardTitle></CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm text-blue-700">
-              <CreditCard className="h-4 w-4" />
-              <span>Secure payment powered by Stripe</span>
+        {/* Bank Transfer Details */}
+        <BankTransferInfo />
+
+        {/* Payment Verification Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Submit Payment Verification</CardTitle>
+            <CardDescription>
+              After making the transfer, enter your payment details below so we can verify your subscription.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label>Amount to Pay</Label>
+              <div className="text-xl font-bold text-gold-dark mt-1">${totalAmount}{periodLabel}</div>
+              <p className="text-xs text-muted-foreground">For: {membershipPlans.find(p => p.tier === selectedPlan)?.name} plan ({billingCycle})</p>
             </div>
-            {user?.subscribed && (
-              <p className="text-xs text-blue-600 mt-2">
-                Use the "Manage" button above to update payment methods, change plans, or cancel.
-              </p>
+            <div>
+              <Label htmlFor="transferRef">Bank Transfer Reference</Label>
+              <Input
+                id="transferRef"
+                placeholder="Enter the reference/transaction ID from your transfer"
+                value={transferRef}
+                onChange={e => setTransferRef(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="transferDate">Transfer Date (optional)</Label>
+              <Input
+                id="transferDate"
+                type="date"
+                value={transferDate}
+                onChange={e => setTransferDate(e.target.value)}
+              />
+            </div>
+            <Button
+              className="bg-gold text-navy hover:bg-gold-light font-semibold"
+              onClick={handleSubmitVerification}
+              disabled={submitting || !transferRef.trim()}
+            >
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Submit for Verification
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Payment History */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Payment History</CardTitle>
+            <CardDescription>Your subscription payment submissions and their verification status.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loadingPayments ? (
+              <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+            ) : payments.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">No payment submissions yet. Make a transfer and submit the details above.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Reference</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {payments.map(p => (
+                    <TableRow key={p.id}>
+                      <TableCell className="text-sm">{new Date(p.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell className="capitalize">{p.metadata?.plan || 'Subscription'}</TableCell>
+                      <TableCell>${p.amount}</TableCell>
+                      <TableCell className="font-mono text-xs">{p.reference}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={statusClass(p.status)}>
+                          <span className="flex items-center gap-1">
+                            {statusIcon(p.status)}
+                            {statusLabel(p.status)}
+                          </span>
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             )}
           </CardContent>
         </Card>
