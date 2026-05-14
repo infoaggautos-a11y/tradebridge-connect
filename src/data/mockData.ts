@@ -391,14 +391,7 @@ export const businesses: Business[] = [
     description: 'Kenyan horticultural exporter with cold chain logistics to European markets.',
     yearEstablished: 2011, employees: '100-250', contactEmail: 'sales@nairobifresh.ke',
   },
-  {
-    id: 'b36', name: 'Accra Textiles Co.', country: sectors: ['Textiles & Fashion'],
-    products: ['Kente Cloth', 'African Print Fabric', 'Ready-to-Wear'], exportCapacity: '10,000 units/month',
-    certifications: ['Fair Trade'], minOrderQty: '500 units', preferredMarkets: ['Italy', 'United Kingdom', 'United States'],
-    verificationLevel: 'verified', tradeReadinessScore: 71, profileCompleteness: 80,
-    description: 'Premium Ghanaian textiles producer combining traditional craftsmanship with modern fashion.',
-    yearEstablished: 2015, employees: '25-50', contactEmail: 'sales@accratextiles.gh',
-  },
+  // (Ghana entry removed)
   {
     id: 'b37', name: 'Johannesburg Mining Corp', country: 'South Africa', sectors: ['Minerals & Mining'],
     products: ['Gold', 'Platinum', 'Chrome Ore'], exportCapacity: '500 MT/month',
