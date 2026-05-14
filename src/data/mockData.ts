@@ -102,7 +102,7 @@ export const SECTORS = [
 ];
 
 export const COUNTRIES = [
-  'Nigeria', 'Italy', 'Ghana', 'Kenya', 'South Africa',
+  'Nigeria', 'Italy', 'Kenya', 'South Africa',
   'United Kingdom', 'Germany', 'France', 'United States', 'China',
   'Guinea-Bissau',
 ];
@@ -153,7 +153,7 @@ export const businesses: Business[] = [
   {
     id: 'b6', name: 'Dauno Integrated Ltd', country: 'Nigeria', sectors: ['Agriculture & Food', 'Logistics & Shipping'],
     products: ['Trade Facilitation', 'Agro-Logistics', 'Export Documentation', 'Commodity Sourcing'], exportCapacity: 'Project-based',
-    certifications: ['CAC'], minOrderQty: 'N/A', preferredMarkets: ['Italy', 'Ghana', 'South Africa'],
+    certifications: ['CAC'], minOrderQty: 'N/A', preferredMarkets: ['Italy', 'South Africa'],
     verificationLevel: 'verified', tradeReadinessScore: 70, profileCompleteness: 78,
     description: 'Asokoro-based integrated services company providing end-to-end trade facilitation, logistics coordination, and export support for Nigerian businesses entering international markets.',
     yearEstablished: 2019, employees: '10-25', contactEmail: 'daunointegrated@gmail.com',
@@ -345,7 +345,7 @@ export const businesses: Business[] = [
   {
     id: 'b30', name: 'PiMason Tech', country: 'Italy', sectors: ['Technology'],
     products: ['Agri-Tech Solutions', 'Supply Chain Software', 'IoT Sensors', 'Data Analytics'], exportCapacity: 'Unlimited (Digital)',
-    certifications: ['ISO 27001'], minOrderQty: 'N/A', preferredMarkets: ['Nigeria', 'Ghana', 'Kenya'],
+    certifications: ['ISO 27001'], minOrderQty: 'N/A', preferredMarkets: ['Nigeria', 'Kenya'],
     verificationLevel: 'basic', tradeReadinessScore: 65, profileCompleteness: 70,
     description: 'Castelfranco Veneto-based Italian IT company developing agricultural technology and supply chain digitization tools for Africa-Europe trade corridors.',
     yearEstablished: 2019, employees: '10-25', contactEmail: 'Paolomason@gmail.com',
@@ -354,7 +354,7 @@ export const businesses: Business[] = [
   {
     id: 'b31', name: 'Napoli Trade Solutions', country: 'Italy', sectors: ['Manufacturing', 'Agriculture & Food'],
     products: ['Olive Oil', 'Pasta Processing Equipment', 'Food Packaging'], exportCapacity: '200 MT/month',
-    certifications: ['ISO 9001', 'EU Organic'], minOrderQty: '5 MT', preferredMarkets: ['Nigeria', 'Ghana', 'Kenya'],
+    certifications: ['ISO 9001', 'EU Organic'], minOrderQty: '5 MT', preferredMarkets: ['Nigeria', 'Kenya'],
     verificationLevel: 'verified', tradeReadinessScore: 82, profileCompleteness: 88,
     description: 'Italian food processing and equipment manufacturer looking to expand into West African markets.',
     yearEstablished: 2012, employees: '100-250', contactEmail: 'trade@napolitrade.it',
@@ -370,7 +370,7 @@ export const businesses: Business[] = [
   {
     id: 'b33', name: 'Roma Pharma International', country: 'Italy', sectors: ['Healthcare & Pharma'],
     products: ['Generic Medicines', 'Medical Equipment', 'Diagnostic Kits'], exportCapacity: '100,000 units/month',
-    certifications: ['EU GMP', 'WHO Prequalification'], minOrderQty: '1,000 units', preferredMarkets: ['Nigeria', 'Ghana', 'Kenya'],
+    certifications: ['EU GMP', 'WHO Prequalification'], minOrderQty: '1,000 units', preferredMarkets: ['Nigeria', 'Kenya'],
     verificationLevel: 'premium', tradeReadinessScore: 93, profileCompleteness: 99,
     description: 'Italian pharmaceutical company expanding into African healthcare markets.',
     yearEstablished: 1995, employees: '500+', contactEmail: 'africa@romapharma.it',
@@ -378,7 +378,7 @@ export const businesses: Business[] = [
   {
     id: 'b34', name: 'Torino Logistics SpA', country: 'Italy', sectors: ['Logistics & Shipping'],
     products: ['Freight Forwarding', 'Customs Clearance', 'Warehousing'], exportCapacity: 'N/A',
-    certifications: ['AEO Certified', 'ISO 28000'], minOrderQty: 'N/A', preferredMarkets: ['Nigeria', 'Ghana', 'South Africa'],
+    certifications: ['AEO Certified', 'ISO 28000'], minOrderQty: 'N/A', preferredMarkets: ['Nigeria', 'South Africa'],
     verificationLevel: 'premium', tradeReadinessScore: 85, profileCompleteness: 90,
     description: 'Italian logistics company specializing in Africa-Europe trade corridors.',
     yearEstablished: 2001, employees: '100-250', contactEmail: 'africa@torinologistics.it',
@@ -392,7 +392,7 @@ export const businesses: Business[] = [
     yearEstablished: 2011, employees: '100-250', contactEmail: 'sales@nairobifresh.ke',
   },
   {
-    id: 'b36', name: 'Accra Textiles Co.', country: 'Ghana', sectors: ['Textiles & Fashion'],
+    id: 'b36', name: 'Accra Textiles Co.', country: sectors: ['Textiles & Fashion'],
     products: ['Kente Cloth', 'African Print Fabric', 'Ready-to-Wear'], exportCapacity: '10,000 units/month',
     certifications: ['Fair Trade'], minOrderQty: '500 units', preferredMarkets: ['Italy', 'United Kingdom', 'United States'],
     verificationLevel: 'verified', tradeReadinessScore: 71, profileCompleteness: 80,
@@ -410,7 +410,7 @@ export const businesses: Business[] = [
   {
     id: 'b38', name: 'Florence Ceramics International', country: 'Italy', sectors: ['Manufacturing', 'Construction Materials'],
     products: ['Porcelain Tiles', 'Sanitary Ware', 'Decorative Ceramics'], exportCapacity: '50,000 sqm/month',
-    certifications: ['CE Mark', 'ISO 9001'], minOrderQty: '500 sqm', preferredMarkets: ['Nigeria', 'Ghana', 'Kenya'],
+    certifications: ['CE Mark', 'ISO 9001'], minOrderQty: '500 sqm', preferredMarkets: ['Nigeria', 'Kenya'],
     verificationLevel: 'verified', tradeReadinessScore: 80, profileCompleteness: 85,
     description: 'Italian ceramics manufacturer expanding into African construction market.',
     yearEstablished: 2007, employees: '100-250', contactEmail: 'export@florenceceramics.it',
