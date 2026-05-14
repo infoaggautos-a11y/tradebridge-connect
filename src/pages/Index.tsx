@@ -7,7 +7,7 @@ import { businesses, events } from '@/data/mockData';
 import {
   Globe, Users, Handshake, CalendarDays, ArrowRight, CheckCircle,
   Building2, TrendingUp, Shield, Briefcase, Ship, Award, Landmark,
-  Quote, MapPin, Clock, ChevronRight
+  MapPin, Clock, ChevronRight
 } from 'lucide-react';
 
 import heroImage from '@/assets/hero-trade-summit.jpg';
@@ -57,27 +57,6 @@ const howItWorks = [
   { step: '02', title: 'Build Trade Profile', description: 'Add products/services, certifications, export history, minimum order quantities, and preferred deal types.', icon: Briefcase },
   { step: '03', title: 'Get Matched', description: 'Our algorithm computes compatibility scores across sector fit, geographic reach, capacity alignment, and verified intent.', icon: Users },
   { step: '04', title: 'Trade & Grow', description: 'Receive curated introductions. Both parties accept before contact info is shared. Quality over volume.', icon: TrendingUp },
-];
-
-const testimonials = [
-  {
-    quote: "DIL's trade platform connected us with three major Italian buyers within our first month. The verification process gave our partners confidence in doing business with us.",
-    name: 'Chief Ade Ogunleye',
-    role: 'CEO, Lagos Agro Exports Ltd',
-    country: 'Nigeria',
-  },
-  {
-    quote: "The trade delegation to Treviso organized by DIL was professionally managed from start to finish. We signed two MOUs and are now exporting to three new markets.",
-    name: 'Kwame Asante',
-    role: 'Director, Accra Textiles Co.',
-    country: 'Ghana',
-  },
-  {
-    quote: "As an Italian manufacturer looking to source from West Africa, DIL's platform provided exactly the verified, trade-ready businesses we needed.",
-    name: 'Marco Bianchi',
-    role: 'President, Italy-Africa Business Council',
-    country: 'Italy',
-  },
 ];
 
 const newsItems = [
@@ -336,31 +315,6 @@ export default function LandingPage() {
                 </Card>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-20 bg-navy">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-14">
-            <Badge className="bg-gold/20 text-gold border-gold/30 mb-4">Testimonials</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">What Our Partners Say</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((t, i) => (
-              <Card key={i} className="bg-navy-light border-navy-light">
-                <CardContent className="p-6">
-                  <Quote className="h-8 w-8 text-gold/40 mb-4" />
-                  <p className="text-gray-300 text-sm leading-relaxed mb-6 italic">"{t.quote}"</p>
-                  <div>
-                    <div className="font-semibold text-white">{t.name}</div>
-                    <div className="text-sm text-gray-400">{t.role}</div>
-                    <div className="text-xs text-gold mt-1">{t.country}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
           </div>
         </div>
       </section>
