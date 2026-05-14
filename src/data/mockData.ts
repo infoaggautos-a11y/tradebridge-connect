@@ -408,6 +408,14 @@ export const businesses: Business[] = [
     description: 'Italian ceramics manufacturer expanding into African construction market.',
     yearEstablished: 2007, employees: '100-250', contactEmail: 'export@florenceceramics.it',
   },
+  {
+    id: 'b39', name: 'Rajol Jireh Limited', country: 'Nigeria', sectors: ['Super Market'],
+    products: ['Supermarket Goods', 'Consumer Products', 'Retail Distribution'], exportCapacity: 'Project-based',
+    certifications: ['CAC'], minOrderQty: 'N/A', preferredMarkets: ['Italy', 'Nigeria'],
+    verificationLevel: 'basic', tradeReadinessScore: 50, profileCompleteness: 60,
+    description: 'Rajol Jireh Limited is a Nigerian supermarket and general trade business seeking international logistics, technology, and supply partnerships.',
+    yearEstablished: 2020, employees: '1-10', contactEmail: 'rajoljirehsupermarket1@gmail.com',
+  },
 ];
 
 // ===== EVENTS =====
