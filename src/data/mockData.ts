@@ -408,39 +408,6 @@ export const businesses: Business[] = [
     description: 'Italian ceramics manufacturer expanding into African construction market.',
     yearEstablished: 2007, employees: '100-250', contactEmail: 'export@florenceceramics.it',
   },
-  // ===== STAFF ACCOUNTS =====
-  {
-    id: 'b39', name: 'Hnery', country: 'Nigeria', sectors: ['Energy & Mining'],
-    products: ['Energy Solutions', 'Mining Consulting'], exportCapacity: 'Project-based',
-    certifications: ['CAC'], minOrderQty: 'N/A', preferredMarkets: ['Nigeria'],
-    verificationLevel: 'basic', tradeReadinessScore: 50, profileCompleteness: 50,
-    description: 'Registered business in Abuja.',
-    yearEstablished: 2020, employees: '1-10', contactEmail: 'hnery@dil.com',
-  },
-  {
-    id: 'b40', name: 'Taxcode', country: 'Nigeria', sectors: ['Other'],
-    products: ['Tax Consulting', 'Business Advisory'], exportCapacity: 'Project-based',
-    certifications: ['CAC'], minOrderQty: 'N/A', preferredMarkets: ['Nigeria'],
-    verificationLevel: 'basic', tradeReadinessScore: 50, profileCompleteness: 50,
-    description: 'Registered business in Abuja.',
-    yearEstablished: 2020, employees: '1-10', contactEmail: 'taxcode@dil.com',
-  },
-  {
-    id: 'b41', name: 'Floodgate System', country: 'Nigeria', sectors: ['Other'],
-    products: ['System Solutions', 'Tech Consulting'], exportCapacity: 'Project-based',
-    certifications: ['CAC'], minOrderQty: 'N/A', preferredMarkets: ['Nigeria'],
-    verificationLevel: 'basic', tradeReadinessScore: 50, profileCompleteness: 50,
-    description: 'Registered business in Abuja.',
-    yearEstablished: 2020, employees: '1-10', contactEmail: 'floodgate@dil.com',
-  },
-  {
-    id: 'b42', name: 'Floodgate System', country: 'Nigeria', sectors: ['Technology'],
-    products: ['Software Development', 'IT Solutions'], exportCapacity: 'Project-based',
-    certifications: ['CAC'], minOrderQty: 'N/A', preferredMarkets: ['Nigeria'],
-    verificationLevel: 'basic', tradeReadinessScore: 50, profileCompleteness: 50,
-    description: 'Registered business in Abuja.',
-    yearEstablished: 2020, employees: '1-10', contactEmail: 'floodgate-tech@dil.com',
-  },
 ];
 
 // ===== EVENTS =====

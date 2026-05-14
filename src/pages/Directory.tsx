@@ -23,6 +23,11 @@ const verificationColors = {
   premium: 'bg-gold/20 text-gold-dark border-gold/30',
 };
 
+const OFFICE_DIRECTORY_NAMES = new Set(['hnery', 'taxcode', 'floodgate system']);
+
+const isOfficeDirectoryAccount = (name: string | null | undefined) =>
+  OFFICE_DIRECTORY_NAMES.has((name || '').trim().toLowerCase());
+
 export default function DirectoryPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
@@ -33,11 +38,17 @@ export default function DirectoryPage() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('business_registrations')
         .select('*')
         .order('created_at', { ascending: false });
-      const mapped: Business[] = (data || []).map((r: any) => ({
+      if (error) {
+        console.error('Failed to load directory registrations', error);
+        return;
+      }
+      const mapped: Business[] = (data || [])
+        .filter((r: any) => !isOfficeDirectoryAccount(r.company_name))
+        .map((r: any) => ({
         id: `reg-${r.id}`,
         name: r.company_name,
         country: r.country || 'Italy',
