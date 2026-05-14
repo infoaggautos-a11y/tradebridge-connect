@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PublicLayout } from '@/layouts/PublicLayout';
-import { businesses, SECTORS, COUNTRIES } from '@/data/mockData';
+import { businesses as mockBusinesses, SECTORS, COUNTRIES, type Business } from '@/data/mockData';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Search, CheckCircle, Shield, Star, Building2, MapPin, Package } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 import logisticsImage from '@/assets/logistics-port.jpg';
 
@@ -28,6 +29,42 @@ export default function DirectoryPage() {
   const [sectorFilter, setSectorFilter] = useState('all');
   const [countryFilter, setCountryFilter] = useState('all');
   const [verificationFilter, setVerificationFilter] = useState('all');
+  const [registered, setRegistered] = useState<Business[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('business_registrations')
+        .select('*')
+        .order('created_at', { ascending: false });
+      const mapped: Business[] = (data || []).map((r: any) => ({
+        id: `reg-${r.id}`,
+        name: r.company_name,
+        country: r.country || 'Italy',
+        sectors: r.sector ? [r.sector] : [],
+        products: r.products_services
+          ? r.products_services.split(/[,;\n]/).map((s: string) => s.trim()).filter(Boolean).slice(0, 8)
+          : [],
+        exportCapacity: r.annual_revenue || 'N/A',
+        certifications: r.registration_number ? [r.registration_number] : [],
+        minOrderQty: 'N/A',
+        preferredMarkets: r.export_markets
+          ? r.export_markets.split(/[,;\n]/).map((s: string) => s.trim()).filter(Boolean)
+          : [],
+        verificationLevel: 'basic' as const,
+        tradeReadinessScore: 50,
+        profileCompleteness: 60,
+        description: r.additional_notes || `${r.company_name} — registered business${r.city ? ` in ${r.city}` : ''}.`,
+        yearEstablished: new Date(r.created_at).getFullYear(),
+        employees: r.company_size || 'N/A',
+        contactEmail: r.email,
+        website: r.website || undefined,
+      }));
+      setRegistered(mapped);
+    })();
+  }, []);
+
+  const businesses = [...registered, ...mockBusinesses];
 
   const filtered = businesses.filter(b => {
     const matchesSearch = !search || b.name.toLowerCase().includes(search.toLowerCase()) ||
