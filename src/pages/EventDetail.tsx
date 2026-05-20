@@ -5,8 +5,12 @@ import { events, TicketTier } from '@/data/mockData';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, CalendarDays, MapPin, Users, Clock, CheckCircle } from 'lucide-react';
+import { ArrowLeft, CalendarDays, MapPin, Users, Clock, CheckCircle, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function EventDetailPage() {
   const { id } = useParams();
@@ -15,6 +19,8 @@ export default function EventDetailPage() {
   const event = events.find(e => e.id === id);
   const [selectedTier, setSelectedTier] = useState<TicketTier | null>(null);
   const [registered, setRegistered] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ fullName: '', email: '', phone: '', company: '', country: '', notes: '' });
 
   if (!event) return <PublicLayout><div className="container mx-auto px-4 py-20 text-center"><h2 className="text-2xl font-bold">Event not found</h2></div></PublicLayout>;
 
@@ -22,10 +28,39 @@ export default function EventDetailPage() {
   const now = new Date();
   const daysUntil = Math.max(0, Math.ceil((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
 
-  const handleRegister = () => {
-    if (!selectedTier) return;
-    setRegistered(true);
-    toast({ title: 'Registration Confirmed!', description: `You're registered for ${event.title}.` });
+  const handleRegister = async () => {
+    if (!selectedTier) {
+      toast({ title: 'Select a ticket', description: 'Please choose a ticket tier first.', variant: 'destructive' });
+      return;
+    }
+    if (!form.fullName.trim() || !form.email.trim()) {
+      toast({ title: 'Missing info', description: 'Full name and email are required.', variant: 'destructive' });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const tier = event.ticketTiers.find(t => t.tier === selectedTier);
+      const { error } = await supabase.functions.invoke('notify-event-registration', {
+        body: {
+          eventId: event.id,
+          eventTitle: event.title,
+          fullName: form.fullName.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          company: form.company.trim(),
+          country: form.country.trim(),
+          ticketTier: tier?.label || selectedTier,
+          notes: form.notes.trim(),
+        },
+      });
+      if (error) throw error;
+      setRegistered(true);
+      toast({ title: 'Registration received!', description: 'Organisers have been notified. We will be in touch shortly.' });
+    } catch (err: any) {
+      toast({ title: 'Registration failed', description: err.message || 'Please try again.', variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -46,6 +81,9 @@ export default function EventDetailPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            {event.imageUrl && (
+              <img src={event.imageUrl} alt={event.title} className="w-full rounded-lg object-cover max-h-[500px]" />
+            )}
             <Card><CardHeader><CardTitle>About</CardTitle></CardHeader><CardContent><p className="text-muted-foreground">{event.description}</p></CardContent></Card>
 
             <Card>
@@ -62,19 +100,21 @@ export default function EventDetailPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader><CardTitle>Speakers</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {event.speakers.map((s, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-secondary">
-                      <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center text-gold font-bold">{s.name[0]}</div>
-                      <div><div className="font-medium text-sm">{s.name}</div><div className="text-xs text-muted-foreground">{s.role}, {s.company}</div></div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {event.speakers.length > 0 && (
+              <Card>
+                <CardHeader><CardTitle>Speakers</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {event.speakers.map((s, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-secondary">
+                        <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center text-gold font-bold">{s.name[0]}</div>
+                        <div><div className="font-medium text-sm">{s.name}</div><div className="text-xs text-muted-foreground">{s.role}, {s.company}</div></div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           <div className="space-y-6">
@@ -91,7 +131,13 @@ export default function EventDetailPage() {
               <CardHeader><CardTitle className="text-base">Register</CardTitle></CardHeader>
               <CardContent>
                 {registered ? (
-                  <div className="text-center py-4"><CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" /><p className="font-medium">You're registered!</p></div>
+                  <div className="text-center py-4">
+                    <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                    <p className="font-medium">You're registered!</p>
+                    <p className="text-xs text-muted-foreground mt-1">Organisers notified at info@daunointegrated.com.</p>
+                  </div>
+                ) : event.isPast ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">This event has ended.</p>
                 ) : (
                   <div className="space-y-3">
                     {event.ticketTiers.map(tier => (
@@ -104,8 +150,38 @@ export default function EventDetailPage() {
                         <ul className="text-xs text-muted-foreground space-y-1">{tier.perks.map((p, i) => <li key={i}>✓ {p}</li>)}</ul>
                       </div>
                     ))}
-                    <Button className="w-full bg-gold text-navy hover:bg-gold-light font-semibold" disabled={!selectedTier} onClick={handleRegister}>
-                      {selectedTier && event.ticketTiers.find(t => t.tier === selectedTier)?.price ? 'Pay Now (Coming Soon)' : 'Register Now'}
+
+                    {selectedTier && (
+                      <div className="space-y-2 pt-2 border-t">
+                        <div className="space-y-1">
+                          <Label htmlFor="fullName" className="text-xs">Full Name *</Label>
+                          <Input id="fullName" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="email" className="text-xs">Email *</Label>
+                          <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="phone" className="text-xs">Phone</Label>
+                          <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="company" className="text-xs">Company</Label>
+                          <Input id="company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="country" className="text-xs">Country</Label>
+                          <Input id="country" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="notes" className="text-xs">Notes</Label>
+                          <Textarea id="notes" rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                        </div>
+                      </div>
+                    )}
+
+                    <Button className="w-full bg-gold text-navy hover:bg-gold-light font-semibold" disabled={!selectedTier || submitting} onClick={handleRegister}>
+                      {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Submitting…</> : 'Submit Registration'}
                     </Button>
                   </div>
                 )}

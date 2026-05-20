@@ -422,6 +422,30 @@ export const businesses: Business[] = [
 export const events: TradeEvent[] = [
   // ===== UPCOMING =====
   {
+    id: 'e0', title: 'B2B Italy Nigeria — Desk Africa Medioriente', type: 'trade-mission',
+    description: 'Innofood Treviso hosts a B2B trade event bringing together Italian and Nigerian businesses for matchmaking, networking and food-industry collaborations. Hosted by the Desk Africa – Medio Oriente think tank, led by Dott. Bartolomeo Fantozzi.',
+    date: '2026-07-13', endDate: '2026-07-13', location: 'Innofood, Treviso, Italy',
+    agenda: [
+      { time: '09:30', title: 'Welcome & Registration' },
+      { time: '10:00', title: 'Opening — Desk Africa Medioriente Think Tank', speaker: 'Dott. Bartolomeo Fantozzi' },
+      { time: '11:00', title: 'B2B Business Meetings' },
+      { time: '13:00', title: 'Networking Lunch — Italian & Nigerian Cuisine' },
+      { time: '14:30', title: 'Food Industry Collaboration Roundtable' },
+      { time: '17:00', title: 'Closing Remarks & Networking Cocktail' },
+    ],
+    speakers: [
+      { name: 'Dott. Bartolomeo Fantozzi', role: 'Economist / Think Tank Lead', company: 'Desk Africa – Medio Oriente' },
+      { name: 'Innofood Leadership', role: 'Host', company: 'Innofood — Feeding the Future' },
+    ],
+    sponsors: ['Innofood', 'Desk Africa – Medio Oriente', 'Dauno Integrated Ltd'],
+    ticketTiers: [
+      { tier: 'free', price: 0, label: 'Standard Pass', perks: ['B2B meeting access', 'Networking lunch', 'Event materials'] },
+      { tier: 'vip', price: 250, label: 'VIP Pass', perks: ['Priority B2B matching', 'Reserved seating', 'Networking cocktail', 'Private meeting room'] },
+    ],
+    registrations: 0, capacity: 120, isPast: false,
+    imageUrl: '/images/events/b2b-italy-nigeria-treviso.jpg',
+  },
+  {
     id: 'e1', title: 'Expo Tokyo 2026', type: 'conference',
     description: 'Major international exhibition for agriculture, trade and innovation. DIL is mobilising a Nigerian delegation to showcase agro-products and innovation to Asian and global buyers.',
     date: '2026-10-07', endDate: '2026-10-09', location: 'Makuhari Messe, Tokyo, Japan',
