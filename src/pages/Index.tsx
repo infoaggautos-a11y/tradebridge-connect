@@ -90,8 +90,8 @@ const partners = [
   'African Development Bank',
   'ECOWAS Commission',
   'Italian Embassy, Abuja',
-  'Ghana Chamber of Commerce',
-  'EU Commission',
+  'Confindustria Reggio Calabria',
+  'Comune di Attigliano',
 ];
 
 export default function LandingPage() {

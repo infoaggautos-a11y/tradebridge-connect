@@ -107,7 +107,7 @@ const sectors = [
 ];
 
 const countries = [
-  'Nigeria', 'Italy', 'Ghana', 'Kenya', 'South Africa',
+  'Nigeria', 'Italy', 'Kenya', 'South Africa',
   'United Kingdom', 'Germany', 'France', 'United States', 'China',
 ];
 

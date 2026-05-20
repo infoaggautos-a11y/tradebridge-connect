@@ -22,7 +22,7 @@ const COMPANY_SIZES = [
 ];
 
 const COUNTRIES = [
-  'Italy', 'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Tanzania',
+  'Italy', 'Nigeria', 'Kenya', 'South Africa', 'Ethiopia', 'Tanzania',
   'Uganda', 'Senegal', 'Cameroon', 'Ivory Coast', 'Morocco', 'Egypt', 'Guinea-Bissau', 'Other',
 ];
 

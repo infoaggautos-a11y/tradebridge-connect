@@ -173,6 +173,57 @@ export type Database = {
         }
         Relationships: []
       }
+      event_registrations: {
+        Row: {
+          company: string | null
+          country: string | null
+          created_at: string
+          email: string
+          event_id: string
+          event_title: string
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          status: string
+          ticket_tier: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          company?: string | null
+          country?: string | null
+          created_at?: string
+          email: string
+          event_id: string
+          event_title: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          ticket_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          company?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string
+          event_id?: string
+          event_title?: string
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          ticket_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       match_requests: {
         Row: {
           admin_notes: string | null
@@ -653,7 +704,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "office"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -781,7 +832,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "office"],
     },
   },
 } as const
