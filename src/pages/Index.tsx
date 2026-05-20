@@ -10,7 +10,7 @@ import {
   MapPin, Clock, ChevronRight
 } from 'lucide-react';
 
-import heroImage from '@/assets/hero-trade-summit.jpg';
+import heroImage from '@/assets/3-marzo-2026-farnesina-768x402.webp';
 import agricultureImage from '@/assets/agriculture-trade.jpg';
 import eventConferenceImage from '@/assets/event-conference.jpg';
 import textilesImage from '@/assets/textiles-fashion.jpg';
