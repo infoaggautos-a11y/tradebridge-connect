@@ -1,15 +1,25 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { events } from '@/data/mockData';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, CalendarDays, MapPin, Users, Clock, Mail, Phone } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { ArrowLeft, CalendarDays, MapPin, Users, Clock, Mail, Phone, CheckCircle, Loader2 } from 'lucide-react';
 
 export default function EventDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const event = events.find(e => e.id === id);
+  const [registered, setRegistered] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ fullName: '', email: '', phone: '', company: '', country: '', notes: '' });
 
   if (!event) {
     return (
@@ -24,6 +34,37 @@ export default function EventDetailPage() {
   const eventDate = new Date(event.date);
   const now = new Date();
   const daysUntil = Math.max(0, Math.ceil((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+
+  const handleRegister = async () => {
+    if (!form.fullName.trim() || !form.email.trim()) {
+      toast({ title: 'Missing info', description: 'Full name and email are required.', variant: 'destructive' });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.functions.invoke('notify-event-registration', {
+        body: {
+          eventId: event.id,
+          eventTitle: event.title,
+          fullName: form.fullName.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          company: form.company.trim(),
+          country: form.country.trim(),
+          notes: form.notes.trim(),
+        },
+      });
+
+      if (error) throw error;
+      setRegistered(true);
+      toast({ title: 'Registration received', description: 'We have sent your registration details to the event team.' });
+    } catch (err: any) {
+      toast({ title: 'Registration failed', description: err.message || 'Please try again.', variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <PublicLayout>
@@ -108,6 +149,51 @@ export default function EventDetailPage() {
                 </CardContent>
               </Card>
             )}
+
+            <Card>
+              <CardHeader><CardTitle className="text-base">Register Interest</CardTitle></CardHeader>
+              <CardContent>
+                {registered ? (
+                  <div className="text-center py-4">
+                    <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                    <p className="font-medium">Registration received.</p>
+                    <p className="text-xs text-muted-foreground mt-1">You will receive an email confirmation shortly.</p>
+                  </div>
+                ) : event.isPast ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">This event has ended.</p>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="fullName" className="text-xs">Full Name *</Label>
+                      <Input id="fullName" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="email" className="text-xs">Email *</Label>
+                      <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="phone" className="text-xs">Phone</Label>
+                      <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="company" className="text-xs">Company</Label>
+                      <Input id="company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="country" className="text-xs">Country</Label>
+                      <Input id="country" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="notes" className="text-xs">Notes</Label>
+                      <Textarea id="notes" rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                    </div>
+                    <Button className="w-full bg-gold text-navy hover:bg-gold-light font-semibold" disabled={submitting} onClick={handleRegister}>
+                      {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Submitting...</> : 'Submit Registration'}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             <Card>
               <CardHeader><CardTitle className="text-base">Event Enquiries</CardTitle></CardHeader>
