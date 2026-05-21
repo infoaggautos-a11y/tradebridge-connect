@@ -66,8 +66,8 @@ const navGroups: MenuGroup[] = [
 
 function Logo() {
   return (
-    <Link to="/" className="flex min-w-[140px] items-center">
-      <img src="/images/dil-logo.png" alt="DIL Logo" className="h-10 w-auto object-contain" />
+    <Link to="/" className="flex min-w-[180px] items-center">
+      <img src="/images/dil-logo.png" alt="DIL Logo" className="h-20 w-auto object-contain" />
     </Link>
   );
 }
@@ -156,7 +156,7 @@ export function PublicNavbar() {
         isScrolled ? 'bg-[rgba(10,15,30,0.92)] backdrop-blur-[12px]' : 'bg-[#0A0F1E]'
       }`}
     >
-      <div className="container mx-auto flex h-[70px] items-center justify-between px-4">
+      <div className="container mx-auto flex h-[112px] items-center justify-between px-4">
         <Logo />
 
         <div className="hidden h-full items-center md:flex">
@@ -302,13 +302,13 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
       <PublicNavbar />
-      <main className="flex-1 pt-[70px]">{children}</main>
+      <main className="flex-1 pt-[112px]">{children}</main>
       <footer className="bg-[hsl(var(--navy))] text-gray-400 py-12 border-t border-[hsl(var(--navy-light))]">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src="/images/dil-logo.png" alt="DIL Logo" className="h-8 w-auto" />
+                <img src="/images/dil-logo.png" alt="DIL Logo" className="h-16 w-auto" />
                 <span className="text-white font-bold">DIL Global Trade</span>
               </div>
               <p className="text-sm mb-4">Dauno Integrated Ltd (DIL) — a transnational company incorporated in Abuja, Nigeria. Specializing in Business Re-engineering, Trade Promotion, and international commerce facilitation.</p>
