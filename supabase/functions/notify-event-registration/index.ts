@@ -148,9 +148,9 @@ Manage: ${origin}/admin/events`;
     const userSubject = `Registration received: ${eventTitle}`;
     const userText = `Dear ${fullName},
 
-Thank you for registering your interest in ${eventTitle}.
+Thank you for registering for ${eventTitle}. This email acknowledges that we have received your registration.
 
-Our team has received your details and will contact you with further information.
+More information will be communicated soon by our team.
 
 For further information, contact us on:
 +2347075443656
@@ -159,8 +159,8 @@ Or infodauno@gmail.com
 Dauno Integrated Ltd`;
     const userHtml = `
       <p>Dear ${escapeHtml(fullName)},</p>
-      <p>Thank you for registering your interest in <strong>${escapeHtml(eventTitle)}</strong>.</p>
-      <p>Our team has received your details and will contact you with further information.</p>
+      <p>Thank you for registering for <strong>${escapeHtml(eventTitle)}</strong>. This email acknowledges that we have received your registration.</p>
+      <p>More information will be communicated soon by our team.</p>
       <p>For further information, contact us on:<br />
       <strong>+2347075443656</strong><br />
       Or <a href="mailto:infodauno@gmail.com">infodauno@gmail.com</a></p>

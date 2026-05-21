@@ -69,7 +69,7 @@ export default function EventDetailPage() {
       });
       if (error) throw error;
       setRegistered(true);
-      toast({ title: 'Registration received', description: 'We have sent your registration details to the event team.' });
+      toast({ title: 'Registration received', description: 'We have acknowledged your registration. More information will be communicated soon.' });
     } catch (err: any) {
       toast({ title: 'Registration failed', description: err.message || 'Please try again.', variant: 'destructive' });
     } finally {
@@ -125,7 +125,7 @@ export default function EventDetailPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <Button size="lg" className="bg-gold text-navy hover:bg-gold-light font-bold" onClick={() => document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' })}>
-              Reserve My Seat
+              Register Interest
             </Button>
             <Button size="lg" variant="outline" className="border-white/40 text-white hover:bg-white/10" onClick={() => document.getElementById('share')?.scrollIntoView({ behavior: 'smooth' })}>
               <Share2 className="h-4 w-4 mr-2" /> Share This Mission
@@ -280,24 +280,14 @@ export default function EventDetailPage() {
 
             <Card id="register">
               <CardHeader>
-                <CardTitle className="text-base">Reserve your seat</CardTitle>
-                {event.ticketTiers.length > 0 && (
-                  <div className="mt-2 space-y-2">
-                    {event.ticketTiers.map(t => (
-                      <div key={t.tier} className="text-xs p-2 rounded bg-secondary">
-                        <div className="font-semibold">{t.label} {t.price > 0 ? `· $${t.price}` : '· Free'}</div>
-                        <div className="text-muted-foreground mt-0.5">{t.perks.slice(0, 2).join(' · ')}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <CardTitle className="text-base">Register interest</CardTitle>
               </CardHeader>
               <CardContent>
                 {registered ? (
                   <div className="text-center py-4">
                     <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
                     <p className="font-medium">Registration received.</p>
-                    <p className="text-xs text-muted-foreground mt-1">You will receive an email confirmation shortly.</p>
+                    <p className="text-xs text-muted-foreground mt-1">More information will be communicated soon.</p>
                   </div>
                 ) : event.isPast ? (
                   <p className="text-sm text-muted-foreground text-center py-4">This event has ended.</p>
