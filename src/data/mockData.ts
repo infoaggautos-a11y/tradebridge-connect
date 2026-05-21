@@ -39,12 +39,13 @@ export interface MatchResult {
 export interface TradeEvent {
   id: string;
   title: string;
+  tagline?: string;
   description: string;
   date: string;
   endDate: string;
   location: string;
   type: 'trade-mission' | 'conference' | 'workshop' | 'delegation';
-  agenda: { time: string; title: string; speaker?: string }[];
+  agenda: { time: string; title: string; speaker?: string; day?: string }[];
   speakers: { name: string; role: string; company: string }[];
   sponsors: string[];
   ticketTiers: { tier: TicketTier; price: number; label: string; perks: string[] }[];
@@ -52,6 +53,11 @@ export interface TradeEvent {
   capacity: number;
   imageUrl?: string;
   isPast: boolean;
+  highlights?: string[];
+  focusAreas?: string[];
+  outcomes?: string[];
+  organizers?: string[];
+  shareTagline?: string;
 }
 
 export interface MembershipPlan {
