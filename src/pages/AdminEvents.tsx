@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { events } from '@/data/mockData';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Download, Plus, Edit, Search, Users, Calendar, DollarSign, CheckCircle, Eye, Send } from 'lucide-react';
+import { Download, Plus, Edit, Search, Users, Calendar, DollarSign, CheckCircle, Eye, Send, RefreshCw, Loader2, Mail } from 'lucide-react';
 import { EventDelegate, Delegation, EventStatus } from '@/types/events';
 
 const mockDelegates: EventDelegate[] = [
