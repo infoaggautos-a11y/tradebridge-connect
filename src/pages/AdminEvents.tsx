@@ -62,6 +62,65 @@ export default function AdminEventsPage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [regLoading, setRegLoading] = useState(true);
+  const [regSearch, setRegSearch] = useState('');
+
+  const fetchRegistrations = async () => {
+    setRegLoading(true);
+    const { data, error } = await supabase
+      .from('event_registrations')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      toast({ title: 'Failed to load registrations', description: error.message, variant: 'destructive' });
+    } else {
+      setRegistrations(data || []);
+    }
+    setRegLoading(false);
+  };
+
+  useEffect(() => { fetchRegistrations(); }, []);
+
+  const updateRegistrationStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from('event_registrations').update({ status }).eq('id', id);
+    if (error) {
+      toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setRegistrations(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+    toast({ title: 'Updated', description: `Registration marked ${status}.` });
+  };
+
+  const exportRegistrationsCSV = () => {
+    const rows = [
+      ['Event', 'Name', 'Email', 'Phone', 'Company', 'Country', 'Ticket', 'Status', 'Date'],
+      ...registrations.map(r => [
+        r.event_title, r.full_name, r.email, r.phone || '', r.company || '',
+        r.country || '', r.ticket_tier || '', r.status, new Date(r.created_at).toLocaleString()
+      ])
+    ];
+    const csv = rows.map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `event_registrations_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const filteredRegistrations = registrations.filter(r => {
+    const q = regSearch.toLowerCase();
+    return !q || r.full_name?.toLowerCase().includes(q) || r.email?.toLowerCase().includes(q)
+      || r.event_title?.toLowerCase().includes(q) || r.company?.toLowerCase().includes(q);
+  });
+
+  const regStats = {
+    total: registrations.length,
+    pending: registrations.filter(r => r.status === 'pending').length,
+    confirmed: registrations.filter(r => r.status === 'confirmed').length,
+    cancelled: registrations.filter(r => r.status === 'cancelled').length,
+  };
+
 
   const exportCSV = (eventId: string) => {
     const event = events.find(e => e.id === eventId);
