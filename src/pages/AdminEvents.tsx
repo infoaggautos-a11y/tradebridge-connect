@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { events } from '@/data/mockData';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Download, Plus, Edit, Search, Users, Calendar, DollarSign, CheckCircle, Eye, Send } from 'lucide-react';
+import { Download, Plus, Edit, Search, Users, Calendar, DollarSign, CheckCircle, Eye, Send, RefreshCw, Loader2, Mail } from 'lucide-react';
 import { EventDelegate, Delegation, EventStatus } from '@/types/events';
 
 const mockDelegates: EventDelegate[] = [
@@ -61,6 +62,65 @@ export default function AdminEventsPage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [regLoading, setRegLoading] = useState(true);
+  const [regSearch, setRegSearch] = useState('');
+
+  const fetchRegistrations = async () => {
+    setRegLoading(true);
+    const { data, error } = await supabase
+      .from('event_registrations')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      toast({ title: 'Failed to load registrations', description: error.message, variant: 'destructive' });
+    } else {
+      setRegistrations(data || []);
+    }
+    setRegLoading(false);
+  };
+
+  useEffect(() => { fetchRegistrations(); }, []);
+
+  const updateRegistrationStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from('event_registrations').update({ status }).eq('id', id);
+    if (error) {
+      toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setRegistrations(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+    toast({ title: 'Updated', description: `Registration marked ${status}.` });
+  };
+
+  const exportRegistrationsCSV = () => {
+    const rows = [
+      ['Event', 'Name', 'Email', 'Phone', 'Company', 'Country', 'Ticket', 'Status', 'Date'],
+      ...registrations.map(r => [
+        r.event_title, r.full_name, r.email, r.phone || '', r.company || '',
+        r.country || '', r.ticket_tier || '', r.status, new Date(r.created_at).toLocaleString()
+      ])
+    ];
+    const csv = rows.map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `event_registrations_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const filteredRegistrations = registrations.filter(r => {
+    const q = regSearch.toLowerCase();
+    return !q || r.full_name?.toLowerCase().includes(q) || r.email?.toLowerCase().includes(q)
+      || r.event_title?.toLowerCase().includes(q) || r.company?.toLowerCase().includes(q);
+  });
+
+  const regStats = {
+    total: registrations.length,
+    pending: registrations.filter(r => r.status === 'pending').length,
+    confirmed: registrations.filter(r => r.status === 'confirmed').length,
+    cancelled: registrations.filter(r => r.status === 'cancelled').length,
+  };
+
 
   const exportCSV = (eventId: string) => {
     const event = events.find(e => e.id === eventId);
@@ -151,12 +211,98 @@ export default function AdminEventsPage() {
           </Dialog>
         </div>
 
-        <Tabs defaultValue="events" className="space-y-6">
+        <Tabs defaultValue="registrations" className="space-y-6">
           <TabsList>
+            <TabsTrigger value="registrations">Registrations ({registrations.length})</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="delegates">Delegates</TabsTrigger>
             <TabsTrigger value="delegations">Delegations</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="registrations" className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Total</p><p className="text-2xl font-bold">{regStats.total}</p></CardContent></Card>
+              <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Pending</p><p className="text-2xl font-bold text-orange-600">{regStats.pending}</p></CardContent></Card>
+              <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Confirmed</p><p className="text-2xl font-bold text-green-600">{regStats.confirmed}</p></CardContent></Card>
+              <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Cancelled</p><p className="text-2xl font-bold text-muted-foreground">{regStats.cancelled}</p></CardContent></Card>
+            </div>
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <CardTitle>Event Registrations</CardTitle>
+                  <div className="flex gap-2">
+                    <div className="relative">
+                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input placeholder="Search name, email, event..." className="pl-8 w-[260px]" value={regSearch} onChange={(e) => setRegSearch(e.target.value)} />
+                    </div>
+                    <Button variant="outline" size="sm" onClick={fetchRegistrations} disabled={regLoading}>
+                      <RefreshCw className={`h-4 w-4 mr-2 ${regLoading ? 'animate-spin' : ''}`} /> Refresh
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={exportRegistrationsCSV} disabled={!registrations.length}>
+                      <Download className="h-4 w-4 mr-2" /> Export CSV
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {regLoading ? (
+                  <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+                ) : filteredRegistrations.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-12">No event registrations yet.</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Event</TableHead>
+                        <TableHead>Attendee</TableHead>
+                        <TableHead>Company</TableHead>
+                        <TableHead>Ticket</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredRegistrations.map(r => (
+                        <TableRow key={r.id}>
+                          <TableCell className="font-medium max-w-[220px] truncate">{r.event_title}</TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="text-sm font-medium">{r.full_name}</p>
+                              <p className="text-xs text-muted-foreground flex items-center gap-1"><Mail className="h-3 w-3" />{r.email}</p>
+                              {r.phone && <p className="text-xs text-muted-foreground">{r.phone}</p>}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm">{r.company || '—'}<div className="text-xs text-muted-foreground">{r.country || ''}</div></TableCell>
+                          <TableCell><Badge variant="secondary">{r.ticket_tier || 'Standard'}</Badge></TableCell>
+                          <TableCell>
+                            <Badge variant={r.status === 'confirmed' ? 'default' : r.status === 'cancelled' ? 'outline' : 'secondary'} className="capitalize">{r.status}</Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{new Date(r.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              {r.status !== 'confirmed' && (
+                                <Button size="sm" variant="ghost" className="h-7 text-green-600" onClick={() => updateRegistrationStatus(r.id, 'confirmed')}>
+                                  <CheckCircle className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {r.status !== 'cancelled' && (
+                                <Button size="sm" variant="ghost" className="h-7 text-destructive" onClick={() => updateRegistrationStatus(r.id, 'cancelled')}>
+                                  Cancel
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+
 
           <TabsContent value="events" className="space-y-4">
             <Card>
