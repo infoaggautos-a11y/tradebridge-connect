@@ -437,13 +437,6 @@ export const events: TradeEvent[] = [
     date: '2026-09-08',
     endDate: '2026-09-15',
     location: 'Treviso, Italy',
-    venue: 'Innofood SRL, Treviso — Veneto Region',
-    type: 'trade-mission',
-    capacity: 80,
-    registrations: 12,
-    isPast: false,
-    imageUrl: eventItaly,
-    tagline: 'Advancing innovation, trade and sustainable food partnership — Italy × Nigeria, one week that opens Europe.',
     focusAreas: ['Agri-food innovation', 'Sustainable food systems', 'Export & market access', 'SME partnerships', 'Technology transfer', 'Investment & financing'],
     highlights: [
       'Direct B2B matchmaking with Italian food-innovation leaders',
@@ -477,7 +470,6 @@ export const events: TradeEvent[] = [
       { day: 'Mon 14 Sep', time: '10:00', title: 'Day 6 — Closing session, MOUs, certificates' },
       { day: 'Tue 15 Sep', time: '—', title: 'Departures from Venice Marco Polo Airport' },
     ],
-
     speakers: [
       { name: 'Dott. Bartolomeo Fantozzi', role: 'Economist & Think Tank Lead', company: 'Desk Africa Medio Oriente' },
       { name: 'Innofood Leadership', role: 'Host & Industry Convenor', company: 'Innofood SRL — Feeding the Future' },
@@ -491,6 +483,7 @@ export const events: TradeEvent[] = [
     registrations: 0, capacity: 120, isPast: false,
     imageUrl: '/images/events/b2b-italy-nigeria-treviso.jpg',
   },
+
   {
     id: 'e-brs-hk-2026',
     title: 'Belt and Road Summit 2026 — Hong Kong 一帶一路高峰論壇',
