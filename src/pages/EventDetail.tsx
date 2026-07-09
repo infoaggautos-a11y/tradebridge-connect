@@ -119,7 +119,7 @@ export default function EventDetailPage() {
             <p className="text-lg md:text-xl text-gold font-medium mb-4 max-w-3xl">{event.tagline}</p>
           )}
           <div className="flex flex-wrap gap-4 text-gray-200 text-sm mb-6">
-            <span className="flex items-center gap-1.5"><CalendarDays className="h-4 w-4 text-gold" />13 – 19 July 2026</span>
+            <span className="flex items-center gap-1.5"><CalendarDays className="h-4 w-4 text-gold" />8 – 15 September 2026</span>
             <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-gold" />{event.location}</span>
             <span className="flex items-center gap-1.5"><Users className="h-4 w-4 text-gold" />{event.registrations}/{event.capacity} delegates</span>
           </div>
