@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink } from '@/components/NavLink';
-import { Globe, LayoutDashboard, Building2, Users, CalendarDays, CreditCard, User, LogOut, Bot, BarChart3, Shield, Scale, Package, Wallet } from 'lucide-react';
+import { Globe, LayoutDashboard, Building2, Users, CalendarDays, CreditCard, User, LogOut, Bot, BarChart3, Shield, Scale, Package, Wallet, BriefcaseBusiness } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MembershipTier } from '@/data/mockData';
 import { hasPlanAccess } from '@/lib/planAccess';
@@ -16,6 +16,7 @@ const memberLinks = [
   { title: 'Directory', url: '/directory', icon: Building2, minTier: 'free' as MembershipTier },
   { title: 'My Matches', url: '/matches', icon: Users, minTier: 'free' as MembershipTier },
   { title: 'Events', url: '/events', icon: CalendarDays, minTier: 'free' as MembershipTier },
+  { title: 'My TMOS', url: '/my-tmos', icon: BriefcaseBusiness, minTier: 'free' as MembershipTier },
   { title: 'AI Advisor', url: '/advisor', icon: Bot, minTier: 'growth' as MembershipTier },
   { title: 'Intelligence', url: '/intelligence', icon: BarChart3, minTier: 'starter' as MembershipTier },
   { title: 'My Deals', url: '/deals', icon: Package, minTier: 'starter' as MembershipTier },

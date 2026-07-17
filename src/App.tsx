@@ -44,6 +44,7 @@ import NewsArticle from "./pages/NewsArticle";
 import TrainingProgrammes from "./pages/TrainingProgrammes";
 import { PlanProtectedRoute } from "@/components/access/PlanProtectedRoute";
 import BusinessRegistration from "./pages/BusinessRegistration";
+import DelegatePortal from "./pages/DelegatePortal";
 
 const queryClient = new QueryClient();
 
@@ -83,6 +84,7 @@ const App = () => (
             <Route path="/disputes" element={<ProtectedRoute><Disputes /></ProtectedRoute>} />
             <Route path="/deals" element={<ProtectedRoute><PlanProtectedRoute requiredTier="starter" feature="deal-room"><DealRoom /></PlanProtectedRoute></ProtectedRoute>} />
             <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
+            <Route path="/my-tmos" element={<ProtectedRoute><DelegatePortal /></ProtectedRoute>} />
             <Route path="/advisor" element={<ProtectedRoute><PlanProtectedRoute requiredTier="growth" feature="ai-advisor"><AIAdvisor /></PlanProtectedRoute></ProtectedRoute>} />
             <Route path="/intelligence" element={<ProtectedRoute><PlanProtectedRoute requiredTier="starter" feature="trade-intelligence"><TradeIntelligence /></PlanProtectedRoute></ProtectedRoute>} />
 
