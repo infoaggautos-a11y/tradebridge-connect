@@ -585,6 +585,83 @@ export type Database = {
           },
         ]
       }
+      tmos_travel_cases: {
+        Row: {
+          accommodation_name: string | null
+          accommodation_status: string
+          arrival_airport: string | null
+          arrival_at: string | null
+          assigned_to: string | null
+          created_at: string
+          departure_airport: string | null
+          departure_at: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          event_id: string
+          event_registration_id: string
+          flight_status: string
+          id: string
+          invitation_letter_status: string
+          notes: string | null
+          passport_valid_until: string | null
+          updated_at: string
+          visa_appointment_at: string | null
+          visa_status: string
+        }
+        Insert: {
+          accommodation_name?: string | null
+          accommodation_status?: string
+          arrival_airport?: string | null
+          arrival_at?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          departure_airport?: string | null
+          departure_at?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          event_id: string
+          event_registration_id: string
+          flight_status?: string
+          id?: string
+          invitation_letter_status?: string
+          notes?: string | null
+          passport_valid_until?: string | null
+          updated_at?: string
+          visa_appointment_at?: string | null
+          visa_status?: string
+        }
+        Update: {
+          accommodation_name?: string | null
+          accommodation_status?: string
+          arrival_airport?: string | null
+          arrival_at?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          departure_airport?: string | null
+          departure_at?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          event_id?: string
+          event_registration_id?: string
+          flight_status?: string
+          id?: string
+          invitation_letter_status?: string
+          notes?: string | null
+          passport_valid_until?: string | null
+          updated_at?: string
+          visa_appointment_at?: string | null
+          visa_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tmos_travel_cases_event_registration_id_fkey"
+            columns: ["event_registration_id"]
+            isOneToOne: true
+            referencedRelation: "event_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tmos_message_logs: {
         Row: {
           channel: string

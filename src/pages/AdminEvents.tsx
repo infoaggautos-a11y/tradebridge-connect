@@ -16,7 +16,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Download, Plus, Edit, Search, Users, Calendar, DollarSign, CheckCircle, Eye, Send, RefreshCw, Loader2, Mail, FileText, ExternalLink, XCircle, CalendarPlus, Handshake } from 'lucide-react';
 import { EventDelegate, Delegation, EventStatus } from '@/types/events';
-import { TMOS_ADMIN_STAGES, TMOS_STAGE_LABELS, TMOSBusinessPartner, TMOSDelegateDocument, TMOSDelegateMatch, TMOSDocumentStatus, TMOSItineraryItem, TMOSMessageLog, TMOSWorkflowStage } from '@/types/tmos';
+import { TMOS_ADMIN_STAGES, TMOS_STAGE_LABELS, TMOSAccommodationStatus, TMOSBusinessPartner, TMOSDelegateDocument, TMOSDelegateMatch, TMOSDocumentStatus, TMOSInvitationLetterStatus, TMOSItineraryItem, TMOSMessageLog, TMOSTravelCase, TMOSTravelTaskStatus, TMOSVisaStatus, TMOSWorkflowStage } from '@/types/tmos';
 import { stageToLegacyStatus } from '@/services/tmosService';
 
 const mockDelegates: EventDelegate[] = [
@@ -95,6 +95,23 @@ type MatchForm = {
   notes: string;
 };
 
+type TravelForm = {
+  visaStatus: TMOSVisaStatus;
+  invitationLetterStatus: TMOSInvitationLetterStatus;
+  flightStatus: TMOSTravelTaskStatus;
+  accommodationStatus: TMOSAccommodationStatus;
+  passportValidUntil: string;
+  visaAppointmentAt: string;
+  arrivalAt: string;
+  departureAt: string;
+  arrivalAirport: string;
+  departureAirport: string;
+  accommodationName: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  notes: string;
+};
+
 const defaultMatchForm: MatchForm = {
   partnerId: 'custom',
   partnerCompany: '',
@@ -111,6 +128,23 @@ const defaultMatchForm: MatchForm = {
   notes: '',
 };
 
+const defaultTravelForm: TravelForm = {
+  visaStatus: 'not_started',
+  invitationLetterStatus: 'not_started',
+  flightStatus: 'not_started',
+  accommodationStatus: 'not_started',
+  passportValidUntil: '',
+  visaAppointmentAt: '',
+  arrivalAt: '',
+  departureAt: '',
+  arrivalAirport: '',
+  departureAirport: '',
+  accommodationName: '',
+  emergencyContactName: '',
+  emergencyContactPhone: '',
+  notes: '',
+};
+
 export default function AdminEventsPage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -121,12 +155,15 @@ export default function AdminEventsPage() {
   const [partners, setPartners] = useState<TMOSBusinessPartner[]>([]);
   const [matchMap, setMatchMap] = useState<Record<string, TMOSDelegateMatch[]>>({});
   const [itineraryMap, setItineraryMap] = useState<Record<string, TMOSItineraryItem[]>>({});
+  const [travelMap, setTravelMap] = useState<Record<string, TMOSTravelCase>>({});
   const [regLoading, setRegLoading] = useState(true);
   const [regSearch, setRegSearch] = useState('');
   const [selectedRegistration, setSelectedRegistration] = useState<EventRegistrationRow | null>(null);
   const [sendingUpdateId, setSendingUpdateId] = useState<string | null>(null);
   const [matchForm, setMatchForm] = useState<MatchForm>(defaultMatchForm);
+  const [travelForm, setTravelForm] = useState<TravelForm>(defaultTravelForm);
   const [creatingMatch, setCreatingMatch] = useState(false);
+  const [savingTravel, setSavingTravel] = useState(false);
 
   const fetchRegistrations = async () => {
     setRegLoading(true);
@@ -141,7 +178,7 @@ export default function AdminEventsPage() {
       setRegistrations(rows);
       const registrationIds = rows.map(r => r.id);
       if (registrationIds.length) {
-        const [{ data: documents }, { data: messages }, { data: matches }, { data: itineraryItems }, { data: partnerRows }] = await Promise.all([
+        const [{ data: documents }, { data: messages }, { data: matches }, { data: itineraryItems }, { data: travelCases }, { data: partnerRows }] = await Promise.all([
           supabase
             .from('tmos_delegate_documents')
             .select('id, event_registration_id, document_code, label, status, file_url, file_name, review_notes, reviewed_at')
@@ -161,6 +198,10 @@ export default function AdminEventsPage() {
             .select('*')
             .in('event_registration_id', registrationIds)
             .order('start_at', { ascending: true }),
+          supabase
+            .from('tmos_travel_cases')
+            .select('*')
+            .in('event_registration_id', registrationIds),
           supabase
             .from('tmos_business_partners')
             .select('*')
@@ -184,12 +225,17 @@ export default function AdminEventsPage() {
           acc[item.event_registration_id] = [...(acc[item.event_registration_id] || []), item];
           return acc;
         }, {}));
+        setTravelMap((travelCases || []).reduce<Record<string, TMOSTravelCase>((acc, travelCase: any) => {
+          acc[travelCase.event_registration_id] = travelCase;
+          return acc;
+        }, {}));
         setPartners((partnerRows || []) as TMOSBusinessPartner[]);
       } else {
         setDocumentMap({});
         setMessageMap({});
         setMatchMap({});
         setItineraryMap({});
+        setTravelMap({});
         setPartners([]);
       }
     }
@@ -201,7 +247,24 @@ export default function AdminEventsPage() {
   useEffect(() => {
     if (!selectedRegistration) return;
     setMatchForm(defaultMatchForm);
-  }, [selectedRegistration?.id]);
+    const travelCase = travelMap[selectedRegistration.id];
+    setTravelForm(travelCase ? {
+      visaStatus: travelCase.visa_status,
+      invitationLetterStatus: travelCase.invitation_letter_status,
+      flightStatus: travelCase.flight_status,
+      accommodationStatus: travelCase.accommodation_status,
+      passportValidUntil: travelCase.passport_valid_until || '',
+      visaAppointmentAt: travelCase.visa_appointment_at ? travelCase.visa_appointment_at.slice(0, 16) : '',
+      arrivalAt: travelCase.arrival_at ? travelCase.arrival_at.slice(0, 16) : '',
+      departureAt: travelCase.departure_at ? travelCase.departure_at.slice(0, 16) : '',
+      arrivalAirport: travelCase.arrival_airport || '',
+      departureAirport: travelCase.departure_airport || '',
+      accommodationName: travelCase.accommodation_name || '',
+      emergencyContactName: travelCase.emergency_contact_name || '',
+      emergencyContactPhone: travelCase.emergency_contact_phone || '',
+      notes: travelCase.notes || '',
+    } : defaultTravelForm);
+  }, [selectedRegistration?.id, travelMap]);
 
   const updateRegistrationStage = async (id: string, workflow_stage: TMOSWorkflowStage) => {
     const { error } = await supabase
@@ -374,6 +437,55 @@ export default function AdminEventsPage() {
     toast({ title: 'Match updated', description: `${match.partner_company} marked as ${status}.` });
   };
 
+  const saveTravelCase = async () => {
+    if (!selectedRegistration) return;
+    setSavingTravel(true);
+    const payload = {
+      event_registration_id: selectedRegistration.id,
+      event_id: selectedRegistration.event_id,
+      visa_status: travelForm.visaStatus,
+      invitation_letter_status: travelForm.invitationLetterStatus,
+      flight_status: travelForm.flightStatus,
+      accommodation_status: travelForm.accommodationStatus,
+      passport_valid_until: travelForm.passportValidUntil || null,
+      visa_appointment_at: travelForm.visaAppointmentAt ? new Date(travelForm.visaAppointmentAt).toISOString() : null,
+      arrival_at: travelForm.arrivalAt ? new Date(travelForm.arrivalAt).toISOString() : null,
+      departure_at: travelForm.departureAt ? new Date(travelForm.departureAt).toISOString() : null,
+      arrival_airport: travelForm.arrivalAirport.trim() || null,
+      departure_airport: travelForm.departureAirport.trim() || null,
+      accommodation_name: travelForm.accommodationName.trim() || null,
+      emergency_contact_name: travelForm.emergencyContactName.trim() || null,
+      emergency_contact_phone: travelForm.emergencyContactPhone.trim() || null,
+      notes: travelForm.notes.trim() || null,
+    };
+    const { data, error } = await supabase
+      .from('tmos_travel_cases')
+      .upsert(payload, { onConflict: 'event_registration_id' })
+      .select()
+      .single();
+
+    if (error || !data) {
+      setSavingTravel(false);
+      toast({ title: 'Travel update failed', description: error?.message, variant: 'destructive' });
+      return;
+    }
+
+    const nextStage: TMOSWorkflowStage | null =
+      travelForm.flightStatus === 'confirmed' && travelForm.accommodationStatus === 'confirmed'
+        ? 'travel_confirmed'
+        : travelForm.visaStatus !== 'not_started' || travelForm.invitationLetterStatus !== 'not_started'
+          ? 'visa_support'
+          : null;
+    if (nextStage && selectedRegistration.workflow_stage !== nextStage) {
+      await updateRegistrationStage(selectedRegistration.id, nextStage);
+      setSelectedRegistration(prev => prev ? { ...prev, workflow_stage: nextStage, status: stageToLegacyStatus(nextStage) } : prev);
+    }
+
+    setTravelMap(prev => ({ ...prev, [selectedRegistration.id]: data as TMOSTravelCase }));
+    setSavingTravel(false);
+    toast({ title: 'Travel case saved', description: 'Visa and travel operations have been updated.' });
+  };
+
   const exportRegistrationsCSV = () => {
     const rows = [
       ['Event', 'Name', 'Email', 'Phone', 'Company', 'Country', 'Stage', 'Score', 'Outcome', 'Date'],
@@ -454,6 +566,7 @@ export default function AdminEventsPage() {
   const selectedMessages = selectedRegistration ? messageMap[selectedRegistration.id] || [] : [];
   const selectedMatches = selectedRegistration ? matchMap[selectedRegistration.id] || [] : [];
   const selectedItinerary = selectedRegistration ? itineraryMap[selectedRegistration.id] || [] : [];
+  const selectedTravelCase = selectedRegistration ? travelMap[selectedRegistration.id] : null;
   const selectedPayload = selectedRegistration?.application_payload || {};
   const selectedScoreBreakdown = selectedRegistration?.score_breakdown || {};
 
@@ -938,6 +1051,120 @@ export default function AdminEventsPage() {
                               <><Send className="h-4 w-4 mr-2" /> Send Status Email</>
                             )}
                           </Button>
+                        </div>
+
+                        <div className="rounded-md border p-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <h3 className="text-sm font-semibold">Visa & Travel</h3>
+                            <Badge variant={selectedTravelCase ? 'default' : 'secondary'}>
+                              {selectedTravelCase ? 'Open case' : 'No case'}
+                            </Badge>
+                          </div>
+                          <div className="mt-3 grid gap-3">
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <div className="space-y-1">
+                                <Label className="text-xs">Visa Status</Label>
+                                <Select value={travelForm.visaStatus} onValueChange={(value) => setTravelForm(prev => ({ ...prev, visaStatus: value as TMOSVisaStatus }))}>
+                                  <SelectTrigger><SelectValue /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="not_started">Not started</SelectItem>
+                                    <SelectItem value="invitation_requested">Invitation requested</SelectItem>
+                                    <SelectItem value="appointment_booked">Appointment booked</SelectItem>
+                                    <SelectItem value="submitted">Submitted</SelectItem>
+                                    <SelectItem value="approved">Approved</SelectItem>
+                                    <SelectItem value="rejected">Rejected</SelectItem>
+                                    <SelectItem value="not_required">Not required</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Invitation Letter</Label>
+                                <Select value={travelForm.invitationLetterStatus} onValueChange={(value) => setTravelForm(prev => ({ ...prev, invitationLetterStatus: value as TMOSInvitationLetterStatus }))}>
+                                  <SelectTrigger><SelectValue /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="not_started">Not started</SelectItem>
+                                    <SelectItem value="drafting">Drafting</SelectItem>
+                                    <SelectItem value="issued">Issued</SelectItem>
+                                    <SelectItem value="sent">Sent</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Flight Status</Label>
+                                <Select value={travelForm.flightStatus} onValueChange={(value) => setTravelForm(prev => ({ ...prev, flightStatus: value as TMOSTravelTaskStatus }))}>
+                                  <SelectTrigger><SelectValue /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="not_started">Not started</SelectItem>
+                                    <SelectItem value="requested">Requested</SelectItem>
+                                    <SelectItem value="booked">Booked</SelectItem>
+                                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                                    <SelectItem value="changed">Changed</SelectItem>
+                                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Accommodation</Label>
+                                <Select value={travelForm.accommodationStatus} onValueChange={(value) => setTravelForm(prev => ({ ...prev, accommodationStatus: value as TMOSAccommodationStatus }))}>
+                                  <SelectTrigger><SelectValue /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="not_started">Not started</SelectItem>
+                                    <SelectItem value="requested">Requested</SelectItem>
+                                    <SelectItem value="reserved">Reserved</SelectItem>
+                                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                                    <SelectItem value="changed">Changed</SelectItem>
+                                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <div className="space-y-1">
+                                <Label className="text-xs">Passport Valid Until</Label>
+                                <Input type="date" value={travelForm.passportValidUntil} onChange={(e) => setTravelForm(prev => ({ ...prev, passportValidUntil: e.target.value }))} />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Visa Appointment</Label>
+                                <Input type="datetime-local" value={travelForm.visaAppointmentAt} onChange={(e) => setTravelForm(prev => ({ ...prev, visaAppointmentAt: e.target.value }))} />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Arrival</Label>
+                                <Input type="datetime-local" value={travelForm.arrivalAt} onChange={(e) => setTravelForm(prev => ({ ...prev, arrivalAt: e.target.value }))} />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Departure</Label>
+                                <Input type="datetime-local" value={travelForm.departureAt} onChange={(e) => setTravelForm(prev => ({ ...prev, departureAt: e.target.value }))} />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Arrival Airport</Label>
+                                <Input value={travelForm.arrivalAirport} onChange={(e) => setTravelForm(prev => ({ ...prev, arrivalAirport: e.target.value }))} />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Departure Airport</Label>
+                                <Input value={travelForm.departureAirport} onChange={(e) => setTravelForm(prev => ({ ...prev, departureAirport: e.target.value }))} />
+                              </div>
+                              <div className="space-y-1 sm:col-span-2">
+                                <Label className="text-xs">Accommodation Name</Label>
+                                <Input value={travelForm.accommodationName} onChange={(e) => setTravelForm(prev => ({ ...prev, accommodationName: e.target.value }))} />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Emergency Contact</Label>
+                                <Input value={travelForm.emergencyContactName} onChange={(e) => setTravelForm(prev => ({ ...prev, emergencyContactName: e.target.value }))} />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Emergency Phone</Label>
+                                <Input value={travelForm.emergencyContactPhone} onChange={(e) => setTravelForm(prev => ({ ...prev, emergencyContactPhone: e.target.value }))} />
+                              </div>
+                              <div className="space-y-1 sm:col-span-2">
+                                <Label className="text-xs">Operations Notes</Label>
+                                <Textarea rows={2} value={travelForm.notes} onChange={(e) => setTravelForm(prev => ({ ...prev, notes: e.target.value }))} />
+                              </div>
+                            </div>
+                            <Button variant="outline" onClick={saveTravelCase} disabled={savingTravel}>
+                              {savingTravel ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
+                              Save Travel Case
+                            </Button>
+                          </div>
                         </div>
 
                         <div className="rounded-md border p-4">

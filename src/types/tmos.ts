@@ -168,6 +168,31 @@ export interface TMOSItineraryItem {
   status: TMOSItineraryStatus;
 }
 
+export type TMOSTravelTaskStatus = 'not_started' | 'requested' | 'booked' | 'confirmed' | 'changed' | 'cancelled';
+export type TMOSVisaStatus = 'not_started' | 'invitation_requested' | 'appointment_booked' | 'submitted' | 'approved' | 'rejected' | 'not_required';
+export type TMOSInvitationLetterStatus = 'not_started' | 'drafting' | 'issued' | 'sent';
+export type TMOSAccommodationStatus = 'not_started' | 'requested' | 'reserved' | 'confirmed' | 'changed' | 'cancelled';
+
+export interface TMOSTravelCase {
+  id: string;
+  event_registration_id: string;
+  event_id: string;
+  visa_status: TMOSVisaStatus;
+  invitation_letter_status: TMOSInvitationLetterStatus;
+  flight_status: TMOSTravelTaskStatus;
+  accommodation_status: TMOSAccommodationStatus;
+  passport_valid_until?: string | null;
+  visa_appointment_at?: string | null;
+  arrival_at?: string | null;
+  departure_at?: string | null;
+  arrival_airport?: string | null;
+  departure_airport?: string | null;
+  accommodation_name?: string | null;
+  emergency_contact_name?: string | null;
+  emergency_contact_phone?: string | null;
+  notes?: string | null;
+}
+
 export const TMOS_DEFAULT_DOCUMENT_REQUIREMENTS: TMOSDocumentRequirement[] = [
   {
     code: 'passport',
