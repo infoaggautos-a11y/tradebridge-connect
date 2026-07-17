@@ -48,6 +48,85 @@ const sendEmail = async ({
   return response.json();
 };
 
+type ApplicationPayload = {
+  sector?: string;
+  productService?: string;
+  annualTurnover?: string;
+  employeeCount?: string;
+  exportExperience?: string;
+  certifications?: string;
+  businessObjective?: string;
+  lookingFor?: string[];
+  targetCountries?: string;
+  expectedMeetings?: string;
+  companyProfileUrl?: string;
+  documentReadiness?: {
+    passportReady?: boolean;
+    companyProfileReady?: boolean;
+    productCatalogueReady?: boolean;
+    certificationReady?: boolean;
+  };
+};
+
+const hasText = (value?: string) => Boolean(value && value.trim().length > 1);
+
+const calculateScore = (payload: ApplicationPayload) => {
+  const exportReadiness = Math.min(
+    (payload.exportExperience === "active_exporter" ? 12 : 0) +
+      (payload.exportExperience === "previous_exporter" ? 9 : 0) +
+      (payload.exportExperience === "export_ready" ? 6 : 0) +
+      (hasText(payload.certifications) ? 5 : 0) +
+      (payload.documentReadiness?.passportReady ? 2 : 0) +
+      (hasText(payload.companyProfileUrl) ? 3 : 0),
+    20,
+  );
+
+  const companyCapacityMap: Record<string, number> = {
+    "1-10": 3,
+    "10-25": 6,
+    "25-50": 9,
+    "50-100": 12,
+    "100+": 15,
+  };
+  const financialCapacityMap: Record<string, number> = {
+    under_50k: 5,
+    "50k_250k": 10,
+    "250k_1m": 15,
+    above_1m: 20,
+  };
+
+  const companyCapacity = companyCapacityMap[payload.employeeCount || ""] || 4;
+  const financialCapacity = financialCapacityMap[payload.annualTurnover || ""] || 6;
+  const intentClarity = Math.min(
+    (hasText(payload.businessObjective) ? 8 : 0) +
+      ((payload.lookingFor || []).length > 0 ? 6 : 0) +
+      (hasText(payload.targetCountries) ? 3 : 0) +
+      (hasText(payload.expectedMeetings) ? 3 : 0),
+    20,
+  );
+  const productQuality = Math.min(
+      (hasText(payload.productService) ? 10 : 0) +
+      (hasText(payload.sector) ? 5 : 0) +
+      (hasText(payload.certifications) ? 5 : 0) +
+      ((hasText(payload.companyProfileUrl) || payload.documentReadiness?.companyProfileReady) ? 5 : 0),
+    25,
+  );
+  const total = exportReadiness + companyCapacity + financialCapacity + intentClarity + productQuality;
+  const outcome = total >= 75 ? "accepted" : total >= 55 ? "needs_review" : total >= 40 ? "waitlisted" : "rejected";
+
+  return {
+    total,
+    breakdown: {
+      exportReadiness,
+      companyCapacity,
+      financialCapacity,
+      intentClarity,
+      productQuality,
+      outcome,
+    },
+  };
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -69,6 +148,7 @@ serve(async (req) => {
       company,
       country,
       notes,
+      applicationPayload,
     } = body;
 
     if (!eventId || !eventTitle || !fullName || !email) {
@@ -94,6 +174,8 @@ serve(async (req) => {
       }
     }
 
+    const { total, breakdown } = calculateScore(applicationPayload || {});
+
     const { data: registration, error: insertError } = await supabaseAdmin
       .from("event_registrations")
       .insert({
@@ -106,6 +188,10 @@ serve(async (req) => {
         country: country || null,
         ticket_tier: null,
         notes: notes || null,
+        workflow_stage: "new_registration",
+        application_payload: applicationPayload || {},
+        qualification_score: total,
+        score_breakdown: breakdown,
         user_id: userId,
         status: "pending",
       })
@@ -113,6 +199,43 @@ serve(async (req) => {
       .single();
 
     if (insertError) throw insertError;
+
+    const documentRequirements = [
+      {
+        document_code: "passport",
+        label: "International Passport",
+        status: applicationPayload?.documentReadiness?.passportReady ? "submitted" : "not_submitted",
+      },
+      {
+        document_code: "company_profile",
+        label: "Company Profile",
+        status: applicationPayload?.documentReadiness?.companyProfileReady ? "submitted" : "not_submitted",
+      },
+      {
+        document_code: "product_catalogue",
+        label: "Product Catalogue",
+        status: applicationPayload?.documentReadiness?.productCatalogueReady ? "submitted" : "not_submitted",
+      },
+      {
+        document_code: "certifications",
+        label: "Certifications",
+        status: applicationPayload?.documentReadiness?.certificationReady ? "submitted" : "not_submitted",
+      },
+    ];
+
+    const { error: documentError } = await supabaseAdmin
+      .from("tmos_delegate_documents")
+      .upsert(
+        documentRequirements.map((document) => ({
+          event_registration_id: registration.id,
+          event_id: eventId,
+          ...document,
+          uploaded_at: document.status === "submitted" ? new Date().toISOString() : null,
+        })),
+        { onConflict: "event_registration_id,document_code" },
+      );
+
+    if (documentError) console.error("Document checklist creation error:", documentError);
 
     const adminEmails = [
       "info@daunointegrated.com",
@@ -167,10 +290,55 @@ Dauno Integrated Ltd`;
       <p>Dauno Integrated Ltd</p>
     `;
 
-    await Promise.all([
-      sendEmail({ to: adminEmails, subject: adminSubject, text: adminText, html: adminHtml }),
-      sendEmail({ to: [email], subject: userSubject, text: userText, html: userHtml }),
-    ]);
+    const emailJobs = [
+      {
+        to: adminEmails,
+        recipient: adminEmails.join(","),
+        subject: adminSubject,
+        text: adminText,
+        html: adminHtml,
+        template_key: "event_registration_admin_notification",
+      },
+      {
+        to: [email],
+        recipient: email,
+        subject: userSubject,
+        text: userText,
+        html: userHtml,
+        template_key: "event_registration_delegate_acknowledgement",
+      },
+    ];
+
+    await Promise.all(emailJobs.map(async (job) => {
+      try {
+        const providerResponse = await sendEmail(job);
+        await supabaseAdmin.from("tmos_message_logs").insert({
+          event_registration_id: registration.id,
+          event_id: eventId,
+          channel: "email",
+          recipient: job.recipient,
+          subject: job.subject,
+          template_key: job.template_key,
+          workflow_stage: "new_registration",
+          status: "sent",
+          provider_message_id: providerResponse?.id || null,
+          sent_at: new Date().toISOString(),
+        });
+      } catch (emailError: any) {
+        await supabaseAdmin.from("tmos_message_logs").insert({
+          event_registration_id: registration.id,
+          event_id: eventId,
+          channel: "email",
+          recipient: job.recipient,
+          subject: job.subject,
+          template_key: job.template_key,
+          workflow_stage: "new_registration",
+          status: "failed",
+          error_message: emailError?.message || "Email send failed",
+        });
+        throw emailError;
+      }
+    }));
 
     return new Response(
       JSON.stringify({ success: true, registrationId: registration.id }),

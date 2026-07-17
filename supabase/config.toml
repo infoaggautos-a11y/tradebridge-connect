@@ -8,3 +8,12 @@ verify_jwt = false
 
 [functions.customer-portal]
 verify_jwt = false
+
+[functions.notify-event-registration]
+verify_jwt = false
+
+[functions.upload-delegate-document]
+verify_jwt = false
+
+[functions.send-registration-update]
+verify_jwt = true

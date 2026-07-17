@@ -38,7 +38,7 @@ export interface EventDelegate {
   contactName: string;
   email: string;
   phone: string;
-  ticketTier: string;
+  journeyTrack: string;
   status: DelegateStatus;
   registrationDate: string;
   dietaryRequirements?: string;

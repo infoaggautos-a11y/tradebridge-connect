@@ -8,8 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { TMOSApplicationPayload, TMOS_DEFAULT_DOCUMENT_REQUIREMENTS } from '@/types/tmos';
 import {
   ArrowLeft, CalendarDays, MapPin, Users, Clock, Mail, Phone, CheckCircle, Loader2,
   Sparkles, Target, Trophy, Share2, Copy, Linkedin, Facebook, MessageCircle, Twitter,
@@ -23,6 +26,10 @@ export default function EventDetailPage() {
   const [registered, setRegistered] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ fullName: '', email: '', phone: '', company: '', country: '', notes: '' });
+  const [documentFiles, setDocumentFiles] = useState<Record<string, File | null>>({});
+  const [applicationPayload, setApplicationPayload] = useState<TMOSApplicationPayload>({
+    lookingFor: [],
+  });
 
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
   const shareText = event?.shareTagline || event?.title || '';
@@ -57,17 +64,58 @@ export default function EventDetailPage() {
       toast({ title: 'Missing info', description: 'Full name and email are required.', variant: 'destructive' });
       return;
     }
+    if (!form.company.trim() || !applicationPayload.sector || !applicationPayload.businessObjective?.trim()) {
+      toast({ title: 'Application incomplete', description: 'Company, sector, and mission objective are required.', variant: 'destructive' });
+      return;
+    }
     setSubmitting(true);
     try {
-      const { error } = await supabase.functions.invoke('notify-event-registration', {
+      const { data, error } = await supabase.functions.invoke('notify-event-registration', {
         body: {
           eventId: event.id, eventTitle: event.title,
           fullName: form.fullName.trim(), email: form.email.trim(),
           phone: form.phone.trim(), company: form.company.trim(),
           country: form.country.trim(), notes: form.notes.trim(),
+          applicationPayload,
         },
       });
       if (error) throw error;
+
+      const registrationId = data?.registrationId;
+      const selectedDocuments = Object.entries(documentFiles).filter(([, file]) => file);
+      if (registrationId && selectedDocuments.length > 0) {
+        const failedUploads: string[] = [];
+        for (const [documentCode, file] of selectedDocuments) {
+          if (!file) continue;
+          try {
+            const base64Data = await fileToBase64(file);
+            const requirement = TMOS_DEFAULT_DOCUMENT_REQUIREMENTS.find(item => item.code === documentCode);
+            const { error: uploadError } = await supabase.functions.invoke('upload-delegate-document', {
+              body: {
+                registrationId,
+                eventId: event.id,
+                email: form.email.trim(),
+                documentCode,
+                label: requirement?.label || documentCode,
+                fileName: file.name,
+                contentType: file.type || 'application/octet-stream',
+                base64Data,
+              },
+            });
+            if (uploadError) throw uploadError;
+          } catch {
+            failedUploads.push(documentCode);
+          }
+        }
+        if (failedUploads.length > 0) {
+          toast({
+            title: 'Registration received',
+            description: 'Some documents could not be uploaded. The team can still follow up from your registration.',
+            variant: 'destructive',
+          });
+        }
+      }
+
       setRegistered(true);
       toast({ title: 'Registration received', description: 'We have acknowledged your registration. More information will be communicated soon.' });
     } catch (err: any) {
@@ -87,6 +135,41 @@ export default function EventDetailPage() {
   };
 
   const enc = encodeURIComponent;
+  const fileToBase64 = (file: File) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const value = String(reader.result || '');
+      resolve(value.includes(',') ? value.split(',')[1] : value);
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+  const updateApplication = <K extends keyof TMOSApplicationPayload>(key: K, value: TMOSApplicationPayload[K]) => {
+    setApplicationPayload(prev => ({ ...prev, [key]: value }));
+  };
+  const updateDocumentFile = (documentCode: string, file: File | null) => {
+    setDocumentFiles(prev => ({ ...prev, [documentCode]: file }));
+  };
+  const updateDocumentReadiness = (key: keyof NonNullable<TMOSApplicationPayload['documentReadiness']>, value: boolean) => {
+    setApplicationPayload(prev => ({
+      ...prev,
+      documentReadiness: {
+        ...(prev.documentReadiness || {}),
+        [key]: value,
+      },
+    }));
+  };
+  const toggleLookingFor = (value: string) => {
+    setApplicationPayload(prev => {
+      const current = prev.lookingFor || [];
+      return {
+        ...prev,
+        lookingFor: current.includes(value)
+          ? current.filter(item => item !== value)
+          : [...current, value],
+      };
+    });
+  };
   const shareLinks = [
     { name: 'X / Twitter', icon: Twitter, color: 'bg-black hover:bg-black/80', url: `https://twitter.com/intent/tweet?text=${enc(shareText)}&url=${enc(shareUrl)}` },
     { name: 'LinkedIn', icon: Linkedin, color: 'bg-[#0A66C2] hover:bg-[#0A66C2]/90', url: `https://www.linkedin.com/sharing/share-offsite/?url=${enc(shareUrl)}` },
@@ -293,6 +376,10 @@ export default function EventDetailPage() {
                   <p className="text-sm text-muted-foreground text-center py-4">This event has ended.</p>
                 ) : (
                   <div className="space-y-3">
+                    <div className="rounded-md border border-gold/20 bg-gold/5 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gold">TMOS Application Step 1</p>
+                      <p className="text-sm text-muted-foreground">Submit your delegate profile for review. No package or payment is selected at this stage.</p>
+                    </div>
                     <div className="space-y-1">
                       <Label htmlFor="fullName" className="text-xs">Full Name *</Label>
                       <Input id="fullName" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
@@ -306,7 +393,7 @@ export default function EventDetailPage() {
                       <Input id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="company" className="text-xs">Company</Label>
+                      <Label htmlFor="company" className="text-xs">Company *</Label>
                       <Input id="company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
                     </div>
                     <div className="space-y-1">
@@ -316,6 +403,146 @@ export default function EventDetailPage() {
                     <div className="space-y-1">
                       <Label htmlFor="notes" className="text-xs">Notes</Label>
                       <Textarea id="notes" rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                    </div>
+                    <div className="border-t pt-3 space-y-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Primary Sector *</Label>
+                        <Select value={applicationPayload.sector || ''} onValueChange={(value) => updateApplication('sector', value)}>
+                          <SelectTrigger><SelectValue placeholder="Select sector" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Agriculture & Food">Agriculture & Food</SelectItem>
+                            <SelectItem value="Manufacturing">Manufacturing</SelectItem>
+                            <SelectItem value="Technology">Technology</SelectItem>
+                            <SelectItem value="Textiles & Fashion">Textiles & Fashion</SelectItem>
+                            <SelectItem value="Logistics">Logistics</SelectItem>
+                            <SelectItem value="Investment">Investment</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="productService" className="text-xs">Product or Service</Label>
+                        <Input id="productService" value={applicationPayload.productService || ''} onChange={(e) => updateApplication('productService', e.target.value)} />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Employee Count</Label>
+                          <Select value={applicationPayload.employeeCount || ''} onValueChange={(value) => updateApplication('employeeCount', value)}>
+                            <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1-10">1-10</SelectItem>
+                              <SelectItem value="10-25">10-25</SelectItem>
+                              <SelectItem value="25-50">25-50</SelectItem>
+                              <SelectItem value="50-100">50-100</SelectItem>
+                              <SelectItem value="100+">100+</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Annual Turnover</Label>
+                          <Select value={applicationPayload.annualTurnover || ''} onValueChange={(value) => updateApplication('annualTurnover', value)}>
+                            <SelectTrigger><SelectValue placeholder="Select range" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="under_50k">Under $50k</SelectItem>
+                              <SelectItem value="50k_250k">$50k-$250k</SelectItem>
+                              <SelectItem value="250k_1m">$250k-$1m</SelectItem>
+                              <SelectItem value="above_1m">Above $1m</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Export Readiness</Label>
+                        <Select value={applicationPayload.exportExperience || ''} onValueChange={(value) => updateApplication('exportExperience', value)}>
+                          <SelectTrigger><SelectValue placeholder="Select readiness" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active_exporter">Currently exporting</SelectItem>
+                            <SelectItem value="previous_exporter">Exported before</SelectItem>
+                            <SelectItem value="export_ready">Ready to export</SelectItem>
+                            <SelectItem value="first_time">First-time exporter</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="certifications" className="text-xs">Certifications</Label>
+                        <Input id="certifications" value={applicationPayload.certifications || ''} onChange={(e) => updateApplication('certifications', e.target.value)} placeholder="NAFDAC, ISO, organic, export license..." />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="businessObjective" className="text-xs">Mission Objective *</Label>
+                        <Textarea id="businessObjective" rows={3} value={applicationPayload.businessObjective || ''} onChange={(e) => updateApplication('businessObjective', e.target.value)} placeholder="What do you want to achieve on this mission?" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Looking For</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {['Buyer', 'Distributor', 'Investor', 'Technology Partner', 'Joint Venture', 'Government Partnership'].map(item => (
+                            <button
+                              key={item}
+                              type="button"
+                              className={`rounded-md border px-2 py-2 text-xs text-left transition-colors ${
+                                (applicationPayload.lookingFor || []).includes(item) ? 'border-gold bg-gold/10 text-gold' : 'hover:border-gold/40'
+                              }`}
+                              onClick={() => toggleLookingFor(item)}
+                            >
+                              {item}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label htmlFor="targetCountries" className="text-xs">Target Countries</Label>
+                          <Input id="targetCountries" value={applicationPayload.targetCountries || ''} onChange={(e) => updateApplication('targetCountries', e.target.value)} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="expectedMeetings" className="text-xs">Expected Meetings</Label>
+                          <Input id="expectedMeetings" value={applicationPayload.expectedMeetings || ''} onChange={(e) => updateApplication('expectedMeetings', e.target.value)} placeholder="e.g. 5-8 qualified meetings" />
+                        </div>
+                      </div>
+                      <div className="space-y-2 rounded-md border p-3">
+                        <div>
+                          <Label className="text-xs">Document Readiness</Label>
+                          <p className="text-xs text-muted-foreground">This helps the TMOS team know which document collection tasks to open after review.</p>
+                        </div>
+                        <div className="space-y-2">
+                          {TMOS_DEFAULT_DOCUMENT_REQUIREMENTS.map(requirement => {
+                            const readinessKey =
+                              requirement.code === 'passport' ? 'passportReady' :
+                              requirement.code === 'company_profile' ? 'companyProfileReady' :
+                              requirement.code === 'product_catalogue' ? 'productCatalogueReady' :
+                              'certificationReady';
+                            return (
+                              <div key={requirement.code} className="space-y-2 rounded-md border border-transparent p-2 hover:border-gold/30">
+                                <label className="flex items-start gap-2">
+                                  <Checkbox
+                                    checked={Boolean(applicationPayload.documentReadiness?.[readinessKey])}
+                                    onCheckedChange={(checked) => updateDocumentReadiness(readinessKey, checked === true)}
+                                  />
+                                  <span>
+                                    <span className="block text-xs font-medium">
+                                      {requirement.label}{requirement.required ? ' *' : ''}
+                                    </span>
+                                    <span className="block text-xs text-muted-foreground">{requirement.description}</span>
+                                  </span>
+                                </label>
+                                <Input
+                                  type="file"
+                                  accept=".pdf,.doc,.docx,image/png,image/jpeg,image/webp"
+                                  className="h-9 text-xs"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0] || null;
+                                    updateDocumentFile(requirement.code, file);
+                                    if (file) updateDocumentReadiness(readinessKey, true);
+                                  }}
+                                />
+                                {documentFiles[requirement.code] && (
+                                  <p className="text-xs text-muted-foreground">
+                                    Selected: {documentFiles[requirement.code]?.name}
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
                     <Button className="w-full bg-gold text-navy hover:bg-gold-light font-semibold" disabled={submitting} onClick={handleRegister}>
                       {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Submitting...</> : 'Submit Registration'}
