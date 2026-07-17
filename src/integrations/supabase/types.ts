@@ -175,6 +175,8 @@ export type Database = {
       }
       event_registrations: {
         Row: {
+          accepted_at: string | null
+          application_payload: Json
           company: string | null
           country: string | null
           created_at: string
@@ -185,12 +187,21 @@ export type Database = {
           id: string
           notes: string | null
           phone: string | null
+          qualification_score: number | null
+          rejected_at: string | null
+          relationship_manager_id: string | null
+          reviewed_at: string | null
+          score_breakdown: Json
           status: string
+          submitted_at: string
           ticket_tier: string | null
           updated_at: string
           user_id: string | null
+          workflow_stage: string
         }
         Insert: {
+          accepted_at?: string | null
+          application_payload?: Json
           company?: string | null
           country?: string | null
           created_at?: string
@@ -201,12 +212,21 @@ export type Database = {
           id?: string
           notes?: string | null
           phone?: string | null
+          qualification_score?: number | null
+          rejected_at?: string | null
+          relationship_manager_id?: string | null
+          reviewed_at?: string | null
+          score_breakdown?: Json
           status?: string
+          submitted_at?: string
           ticket_tier?: string | null
           updated_at?: string
           user_id?: string | null
+          workflow_stage?: string
         }
         Update: {
+          accepted_at?: string | null
+          application_payload?: Json
           company?: string | null
           country?: string | null
           created_at?: string
@@ -217,10 +237,17 @@ export type Database = {
           id?: string
           notes?: string | null
           phone?: string | null
+          qualification_score?: number | null
+          rejected_at?: string | null
+          relationship_manager_id?: string | null
+          reviewed_at?: string | null
+          score_breakdown?: Json
           status?: string
+          submitted_at?: string
           ticket_tier?: string | null
           updated_at?: string
           user_id?: string | null
+          workflow_stage?: string
         }
         Relationships: []
       }
@@ -500,6 +527,198 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tmos_delegate_documents: {
+        Row: {
+          created_at: string
+          document_code: string
+          event_id: string
+          event_registration_id: string
+          file_name: string | null
+          file_url: string | null
+          id: string
+          label: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          uploaded_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_code: string
+          event_id: string
+          event_registration_id: string
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          label: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          uploaded_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_code?: string
+          event_id?: string
+          event_registration_id?: string
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          label?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          uploaded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tmos_delegate_documents_event_registration_id_fkey"
+            columns: ["event_registration_id"]
+            isOneToOne: false
+            referencedRelation: "event_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tmos_document_requirements: {
+        Row: {
+          applies_to_stages: string[]
+          code: string
+          created_at: string
+          description: string | null
+          event_id: string
+          id: string
+          label: string
+          required: boolean
+          updated_at: string
+        }
+        Insert: {
+          applies_to_stages?: string[]
+          code: string
+          created_at?: string
+          description?: string | null
+          event_id: string
+          id?: string
+          label: string
+          required?: boolean
+          updated_at?: string
+        }
+        Update: {
+          applies_to_stages?: string[]
+          code?: string
+          created_at?: string
+          description?: string | null
+          event_id?: string
+          id?: string
+          label?: string
+          required?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tmos_message_logs: {
+        Row: {
+          channel: string
+          created_at: string
+          error_message: string | null
+          event_id: string
+          event_registration_id: string | null
+          id: string
+          provider_message_id: string | null
+          recipient: string
+          sent_at: string | null
+          status: string
+          subject: string | null
+          template_key: string | null
+          workflow_stage: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          error_message?: string | null
+          event_id: string
+          event_registration_id?: string | null
+          id?: string
+          provider_message_id?: string | null
+          recipient: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          template_key?: string | null
+          workflow_stage?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          error_message?: string | null
+          event_id?: string
+          event_registration_id?: string | null
+          id?: string
+          provider_message_id?: string | null
+          recipient?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          template_key?: string | null
+          workflow_stage?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tmos_message_logs_event_registration_id_fkey"
+            columns: ["event_registration_id"]
+            isOneToOne: false
+            referencedRelation: "event_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tmos_stage_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event_id: string
+          event_registration_id: string
+          from_stage: string | null
+          id: string
+          reason: string | null
+          to_stage: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event_id: string
+          event_registration_id: string
+          from_stage?: string | null
+          id?: string
+          reason?: string | null
+          to_stage: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event_id?: string
+          event_registration_id?: string
+          from_stage?: string | null
+          id?: string
+          reason?: string | null
+          to_stage?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tmos_stage_events_event_registration_id_fkey"
+            columns: ["event_registration_id"]
+            isOneToOne: false
+            referencedRelation: "event_registrations"
             referencedColumns: ["id"]
           },
         ]
