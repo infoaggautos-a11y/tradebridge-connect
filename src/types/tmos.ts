@@ -115,6 +115,59 @@ export interface TMOSMessageLog {
   sent_at?: string | null;
 }
 
+export type TMOSMatchStatus = 'proposed' | 'confirmed' | 'declined' | 'completed' | 'cancelled';
+export type TMOSMeetingFormat = 'in_person' | 'virtual' | 'hybrid';
+export type TMOSItineraryItemType = 'meeting' | 'briefing' | 'site_visit' | 'travel' | 'networking' | 'admin';
+export type TMOSItineraryStatus = 'draft' | 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
+
+export interface TMOSBusinessPartner {
+  id: string;
+  event_id: string;
+  company_name: string;
+  country?: string | null;
+  sector?: string | null;
+  contact_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  profile?: Record<string, unknown>;
+  status: 'active' | 'inactive' | 'blocked';
+}
+
+export interface TMOSDelegateMatch {
+  id: string;
+  event_registration_id: string;
+  event_id: string;
+  partner_id?: string | null;
+  partner_company: string;
+  partner_contact_name?: string | null;
+  partner_email?: string | null;
+  partner_country?: string | null;
+  partner_sector?: string | null;
+  match_score: number;
+  match_rationale?: string | null;
+  meeting_objective?: string | null;
+  scheduled_at?: string | null;
+  location?: string | null;
+  meeting_format: TMOSMeetingFormat;
+  status: TMOSMatchStatus;
+  notes?: string | null;
+}
+
+export interface TMOSItineraryItem {
+  id: string;
+  event_registration_id: string;
+  event_id: string;
+  match_id?: string | null;
+  title: string;
+  description?: string | null;
+  item_type: TMOSItineraryItemType;
+  start_at: string;
+  end_at?: string | null;
+  location?: string | null;
+  visibility: 'internal' | 'delegate';
+  status: TMOSItineraryStatus;
+}
+
 export const TMOS_DEFAULT_DOCUMENT_REQUIREMENTS: TMOSDocumentRequirement[] = [
   {
     code: 'passport',

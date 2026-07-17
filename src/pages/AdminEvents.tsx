@@ -14,9 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Download, Plus, Edit, Search, Users, Calendar, DollarSign, CheckCircle, Eye, Send, RefreshCw, Loader2, Mail, FileText, ExternalLink, XCircle } from 'lucide-react';
+import { Download, Plus, Edit, Search, Users, Calendar, DollarSign, CheckCircle, Eye, Send, RefreshCw, Loader2, Mail, FileText, ExternalLink, XCircle, CalendarPlus, Handshake } from 'lucide-react';
 import { EventDelegate, Delegation, EventStatus } from '@/types/events';
-import { TMOS_ADMIN_STAGES, TMOS_STAGE_LABELS, TMOSDelegateDocument, TMOSDocumentStatus, TMOSMessageLog, TMOSWorkflowStage } from '@/types/tmos';
+import { TMOS_ADMIN_STAGES, TMOS_STAGE_LABELS, TMOSBusinessPartner, TMOSDelegateDocument, TMOSDelegateMatch, TMOSDocumentStatus, TMOSItineraryItem, TMOSMessageLog, TMOSWorkflowStage } from '@/types/tmos';
 import { stageToLegacyStatus } from '@/services/tmosService';
 
 const mockDelegates: EventDelegate[] = [
@@ -79,6 +79,38 @@ type EventRegistrationRow = {
   created_at: string;
 };
 
+type MatchForm = {
+  partnerId: string;
+  partnerCompany: string;
+  partnerContactName: string;
+  partnerEmail: string;
+  partnerCountry: string;
+  partnerSector: string;
+  matchScore: string;
+  matchRationale: string;
+  meetingObjective: string;
+  scheduledAt: string;
+  location: string;
+  meetingFormat: 'in_person' | 'virtual' | 'hybrid';
+  notes: string;
+};
+
+const defaultMatchForm: MatchForm = {
+  partnerId: 'custom',
+  partnerCompany: '',
+  partnerContactName: '',
+  partnerEmail: '',
+  partnerCountry: '',
+  partnerSector: '',
+  matchScore: '75',
+  matchRationale: '',
+  meetingObjective: '',
+  scheduledAt: '',
+  location: '',
+  meetingFormat: 'in_person',
+  notes: '',
+};
+
 export default function AdminEventsPage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,10 +118,15 @@ export default function AdminEventsPage() {
   const [registrations, setRegistrations] = useState<EventRegistrationRow[]>([]);
   const [documentMap, setDocumentMap] = useState<Record<string, TMOSDelegateDocument[]>>({});
   const [messageMap, setMessageMap] = useState<Record<string, TMOSMessageLog[]>>({});
+  const [partners, setPartners] = useState<TMOSBusinessPartner[]>([]);
+  const [matchMap, setMatchMap] = useState<Record<string, TMOSDelegateMatch[]>>({});
+  const [itineraryMap, setItineraryMap] = useState<Record<string, TMOSItineraryItem[]>>({});
   const [regLoading, setRegLoading] = useState(true);
   const [regSearch, setRegSearch] = useState('');
   const [selectedRegistration, setSelectedRegistration] = useState<EventRegistrationRow | null>(null);
   const [sendingUpdateId, setSendingUpdateId] = useState<string | null>(null);
+  const [matchForm, setMatchForm] = useState<MatchForm>(defaultMatchForm);
+  const [creatingMatch, setCreatingMatch] = useState(false);
 
   const fetchRegistrations = async () => {
     setRegLoading(true);
@@ -104,7 +141,7 @@ export default function AdminEventsPage() {
       setRegistrations(rows);
       const registrationIds = rows.map(r => r.id);
       if (registrationIds.length) {
-        const [{ data: documents }, { data: messages }] = await Promise.all([
+        const [{ data: documents }, { data: messages }, { data: matches }, { data: itineraryItems }, { data: partnerRows }] = await Promise.all([
           supabase
             .from('tmos_delegate_documents')
             .select('id, event_registration_id, document_code, label, status, file_url, file_name, review_notes, reviewed_at')
@@ -114,6 +151,22 @@ export default function AdminEventsPage() {
             .select('event_registration_id, channel, recipient, subject, workflow_stage, status, error_message, sent_at')
             .in('event_registration_id', registrationIds)
             .order('created_at', { ascending: false }),
+          supabase
+            .from('tmos_delegate_matches')
+            .select('*')
+            .in('event_registration_id', registrationIds)
+            .order('scheduled_at', { ascending: true, nullsFirst: false }),
+          supabase
+            .from('tmos_itinerary_items')
+            .select('*')
+            .in('event_registration_id', registrationIds)
+            .order('start_at', { ascending: true }),
+          supabase
+            .from('tmos_business_partners')
+            .select('*')
+            .in('event_id', Array.from(new Set(rows.map(r => r.event_id))))
+            .eq('status', 'active')
+            .order('company_name', { ascending: true }),
         ]);
         setDocumentMap((documents || []).reduce<Record<string, TMOSDelegateDocument[]>>((acc, doc: any) => {
           acc[doc.event_registration_id] = [...(acc[doc.event_registration_id] || []), doc];
@@ -123,15 +176,32 @@ export default function AdminEventsPage() {
           acc[message.event_registration_id] = [...(acc[message.event_registration_id] || []), message];
           return acc;
         }, {}));
+        setMatchMap((matches || []).reduce<Record<string, TMOSDelegateMatch[]>>((acc, match: any) => {
+          acc[match.event_registration_id] = [...(acc[match.event_registration_id] || []), match];
+          return acc;
+        }, {}));
+        setItineraryMap((itineraryItems || []).reduce<Record<string, TMOSItineraryItem[]>>((acc, item: any) => {
+          acc[item.event_registration_id] = [...(acc[item.event_registration_id] || []), item];
+          return acc;
+        }, {}));
+        setPartners((partnerRows || []) as TMOSBusinessPartner[]);
       } else {
         setDocumentMap({});
         setMessageMap({});
+        setMatchMap({});
+        setItineraryMap({});
+        setPartners([]);
       }
     }
     setRegLoading(false);
   };
 
   useEffect(() => { fetchRegistrations(); }, []);
+
+  useEffect(() => {
+    if (!selectedRegistration) return;
+    setMatchForm(defaultMatchForm);
+  }, [selectedRegistration?.id]);
 
   const updateRegistrationStage = async (id: string, workflow_stage: TMOSWorkflowStage) => {
     const { error } = await supabase
@@ -202,6 +272,106 @@ export default function AdminEventsPage() {
     }
     toast({ title: 'Update email sent', description: `${registration.full_name} has been notified.` });
     fetchRegistrations();
+  };
+
+  const handlePartnerSelect = (partnerId: string) => {
+    if (partnerId === 'custom') {
+      setMatchForm(defaultMatchForm);
+      return;
+    }
+    const partner = partners.find(item => item.id === partnerId);
+    setMatchForm(prev => ({
+      ...prev,
+      partnerId,
+      partnerCompany: partner?.company_name || '',
+      partnerContactName: partner?.contact_name || '',
+      partnerEmail: partner?.email || '',
+      partnerCountry: partner?.country || '',
+      partnerSector: partner?.sector || '',
+    }));
+  };
+
+  const createDelegateMatch = async () => {
+    if (!selectedRegistration || !matchForm.partnerCompany.trim()) {
+      toast({ title: 'Partner required', description: 'Add or select a partner company before creating the match.', variant: 'destructive' });
+      return;
+    }
+    setCreatingMatch(true);
+    const score = Math.max(0, Math.min(100, Number(matchForm.matchScore) || 50));
+    const { data: match, error } = await supabase
+      .from('tmos_delegate_matches')
+      .insert({
+        event_registration_id: selectedRegistration.id,
+        event_id: selectedRegistration.event_id,
+        partner_id: matchForm.partnerId === 'custom' ? null : matchForm.partnerId,
+        partner_company: matchForm.partnerCompany.trim(),
+        partner_contact_name: matchForm.partnerContactName.trim() || null,
+        partner_email: matchForm.partnerEmail.trim() || null,
+        partner_country: matchForm.partnerCountry.trim() || null,
+        partner_sector: matchForm.partnerSector.trim() || null,
+        match_score: score,
+        match_rationale: matchForm.matchRationale.trim() || null,
+        meeting_objective: matchForm.meetingObjective.trim() || null,
+        scheduled_at: matchForm.scheduledAt ? new Date(matchForm.scheduledAt).toISOString() : null,
+        location: matchForm.location.trim() || null,
+        meeting_format: matchForm.meetingFormat,
+        status: matchForm.scheduledAt ? 'confirmed' : 'proposed',
+        notes: matchForm.notes.trim() || null,
+      })
+      .select()
+      .single();
+
+    if (error || !match) {
+      setCreatingMatch(false);
+      toast({ title: 'Match creation failed', description: error?.message, variant: 'destructive' });
+      return;
+    }
+
+    if (matchForm.scheduledAt) {
+      const start = new Date(matchForm.scheduledAt);
+      const end = new Date(start.getTime() + 45 * 60 * 1000);
+      const { error: itineraryError } = await supabase
+        .from('tmos_itinerary_items')
+        .insert({
+          event_registration_id: selectedRegistration.id,
+          event_id: selectedRegistration.event_id,
+          match_id: match.id,
+          title: `B2B Meeting: ${matchForm.partnerCompany.trim()}`,
+          description: matchForm.meetingObjective.trim() || matchForm.matchRationale.trim() || null,
+          item_type: 'meeting',
+          start_at: start.toISOString(),
+          end_at: end.toISOString(),
+          location: matchForm.location.trim() || null,
+          visibility: 'delegate',
+          status: 'confirmed',
+        });
+      if (itineraryError) {
+        toast({ title: 'Match created', description: 'The itinerary item could not be created automatically.', variant: 'destructive' });
+      }
+    }
+
+    setCreatingMatch(false);
+    setMatchForm(defaultMatchForm);
+    toast({ title: 'Match created', description: `${matchForm.partnerCompany.trim()} has been added to the delegate journey.` });
+    fetchRegistrations();
+  };
+
+  const updateMatchStatus = async (match: TMOSDelegateMatch, status: TMOSDelegateMatch['status']) => {
+    const { error } = await supabase
+      .from('tmos_delegate_matches')
+      .update({ status })
+      .eq('id', match.id);
+    if (error) {
+      toast({ title: 'Match update failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setMatchMap(prev => ({
+      ...prev,
+      [match.event_registration_id]: (prev[match.event_registration_id] || []).map(item =>
+        item.id === match.id ? { ...item, status } : item
+      ),
+    }));
+    toast({ title: 'Match updated', description: `${match.partner_company} marked as ${status}.` });
   };
 
   const exportRegistrationsCSV = () => {
@@ -282,6 +452,8 @@ export default function AdminEventsPage() {
 
   const selectedDocuments = selectedRegistration ? documentMap[selectedRegistration.id] || [] : [];
   const selectedMessages = selectedRegistration ? messageMap[selectedRegistration.id] || [] : [];
+  const selectedMatches = selectedRegistration ? matchMap[selectedRegistration.id] || [] : [];
+  const selectedItinerary = selectedRegistration ? itineraryMap[selectedRegistration.id] || [] : [];
   const selectedPayload = selectedRegistration?.application_payload || {};
   const selectedScoreBreakdown = selectedRegistration?.score_breakdown || {};
 
@@ -586,6 +758,124 @@ export default function AdminEventsPage() {
                             )}
                           </div>
                         </div>
+
+                        <div className="rounded-md border p-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <h3 className="text-sm font-semibold flex items-center gap-2">
+                              <Handshake className="h-4 w-4 text-muted-foreground" />
+                              Business Matching
+                            </h3>
+                            <Badge variant="outline">{selectedMatches.length} matches</Badge>
+                          </div>
+                          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Partner</Label>
+                              <Select value={matchForm.partnerId} onValueChange={handlePartnerSelect}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select partner" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="custom">Custom partner</SelectItem>
+                                  {partners.filter(partner => partner.event_id === selectedRegistration.event_id).map(partner => (
+                                    <SelectItem key={partner.id} value={partner.id}>{partner.company_name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Partner Company *</Label>
+                              <Input value={matchForm.partnerCompany} onChange={(e) => setMatchForm(prev => ({ ...prev, partnerCompany: e.target.value }))} />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Contact Name</Label>
+                              <Input value={matchForm.partnerContactName} onChange={(e) => setMatchForm(prev => ({ ...prev, partnerContactName: e.target.value }))} />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Contact Email</Label>
+                              <Input type="email" value={matchForm.partnerEmail} onChange={(e) => setMatchForm(prev => ({ ...prev, partnerEmail: e.target.value }))} />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Country</Label>
+                              <Input value={matchForm.partnerCountry} onChange={(e) => setMatchForm(prev => ({ ...prev, partnerCountry: e.target.value }))} />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Sector</Label>
+                              <Input value={matchForm.partnerSector} onChange={(e) => setMatchForm(prev => ({ ...prev, partnerSector: e.target.value }))} />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Match Score</Label>
+                              <Input type="number" min="0" max="100" value={matchForm.matchScore} onChange={(e) => setMatchForm(prev => ({ ...prev, matchScore: e.target.value }))} />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Meeting Format</Label>
+                              <Select value={matchForm.meetingFormat} onValueChange={(value) => setMatchForm(prev => ({ ...prev, meetingFormat: value as MatchForm['meetingFormat'] }))}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="in_person">In person</SelectItem>
+                                  <SelectItem value="virtual">Virtual</SelectItem>
+                                  <SelectItem value="hybrid">Hybrid</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Schedule</Label>
+                              <Input type="datetime-local" value={matchForm.scheduledAt} onChange={(e) => setMatchForm(prev => ({ ...prev, scheduledAt: e.target.value }))} />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Location</Label>
+                              <Input value={matchForm.location} onChange={(e) => setMatchForm(prev => ({ ...prev, location: e.target.value }))} />
+                            </div>
+                            <div className="space-y-1 sm:col-span-2">
+                              <Label className="text-xs">Meeting Objective</Label>
+                              <Input value={matchForm.meetingObjective} onChange={(e) => setMatchForm(prev => ({ ...prev, meetingObjective: e.target.value }))} placeholder="e.g. distributor discussion, technology transfer, buyer introduction" />
+                            </div>
+                            <div className="space-y-1 sm:col-span-2">
+                              <Label className="text-xs">Match Rationale</Label>
+                              <Textarea rows={2} value={matchForm.matchRationale} onChange={(e) => setMatchForm(prev => ({ ...prev, matchRationale: e.target.value }))} />
+                            </div>
+                          </div>
+                          <Button className="mt-3" onClick={createDelegateMatch} disabled={creatingMatch}>
+                            {creatingMatch ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CalendarPlus className="h-4 w-4 mr-2" />}
+                            Add Match
+                          </Button>
+                          <div className="mt-4 space-y-2">
+                            {selectedMatches.length ? selectedMatches.map(match => (
+                              <div key={match.id} className="rounded-md border p-3">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                  <div>
+                                    <p className="text-sm font-medium">{match.partner_company}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {[match.partner_sector, match.partner_country].filter(Boolean).join(' - ') || 'No sector or country set'}
+                                    </p>
+                                    {match.meeting_objective && <p className="mt-1 text-xs">{match.meeting_objective}</p>}
+                                    {match.scheduled_at && (
+                                      <p className="mt-1 text-xs text-muted-foreground">
+                                        {new Date(match.scheduled_at).toLocaleString()} {match.location ? `at ${match.location}` : ''}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="outline">{match.match_score}%</Badge>
+                                    <Select value={match.status} onValueChange={(value) => updateMatchStatus(match, value as TMOSDelegateMatch['status'])}>
+                                      <SelectTrigger className="h-8 w-[130px] text-xs">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="proposed">Proposed</SelectItem>
+                                        <SelectItem value="confirmed">Confirmed</SelectItem>
+                                        <SelectItem value="completed">Completed</SelectItem>
+                                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                                        <SelectItem value="declined">Declined</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+                              </div>
+                            )) : (
+                              <p className="text-sm text-muted-foreground">No matches scheduled yet.</p>
+                            )}
+                          </div>
+                        </div>
                       </div>
 
                       <div className="space-y-4">
@@ -648,6 +938,32 @@ export default function AdminEventsPage() {
                               <><Send className="h-4 w-4 mr-2" /> Send Status Email</>
                             )}
                           </Button>
+                        </div>
+
+                        <div className="rounded-md border p-4">
+                          <h3 className="text-sm font-semibold flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            Itinerary
+                          </h3>
+                          <div className="mt-3 space-y-3">
+                            {selectedItinerary.length ? selectedItinerary.map(item => (
+                              <div key={item.id} className="rounded-md border p-3">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div>
+                                    <p className="text-sm font-medium">{item.title}</p>
+                                    <p className="text-xs text-muted-foreground">{new Date(item.start_at).toLocaleString()}</p>
+                                    {item.location && <p className="text-xs text-muted-foreground">{item.location}</p>}
+                                  </div>
+                                  <Badge variant={item.status === 'confirmed' || item.status === 'scheduled' ? 'default' : 'secondary'}>
+                                    {item.status}
+                                  </Badge>
+                                </div>
+                                {item.description && <p className="mt-2 text-xs">{item.description}</p>}
+                              </div>
+                            )) : (
+                              <p className="text-sm text-muted-foreground">No itinerary items yet.</p>
+                            )}
+                          </div>
                         </div>
 
                         <div className="rounded-md border p-4">
