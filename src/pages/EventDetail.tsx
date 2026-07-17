@@ -16,6 +16,7 @@ import { TMOSApplicationPayload, TMOS_DEFAULT_DOCUMENT_REQUIREMENTS } from '@/ty
 import {
   ArrowLeft, CalendarDays, MapPin, Users, Clock, Mail, Phone, CheckCircle, Loader2,
   Sparkles, Target, Trophy, Share2, Copy, Linkedin, Facebook, MessageCircle, Twitter,
+  TrendingUp, DollarSign, Users as UsersIcon, FileText, Handshake,
 } from 'lucide-react';
 
 export default function EventDetailPage() {
@@ -349,6 +350,7 @@ export default function EventDetailPage() {
                 </div>
               </div>
             </Card>
+
           </div>
 
           <div className="space-y-6">
@@ -576,7 +578,7 @@ export default function EventDetailPage() {
               </CardContent>
             </Card>
 
-            {event.sponsors.length > 0 && (
+            {event.sponsors && event.sponsors.length > 0 && (
               <Card>
                 <CardHeader><CardTitle className="text-base">Partners</CardTitle></CardHeader>
                 <CardContent>

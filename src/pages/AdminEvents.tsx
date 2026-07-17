@@ -18,6 +18,7 @@ import { Download, Plus, Edit, Search, Users, Calendar, DollarSign, CheckCircle,
 import { EventDelegate, Delegation, EventStatus } from '@/types/events';
 import { TMOS_ADMIN_STAGES, TMOS_STAGE_LABELS, TMOSAccommodationStatus, TMOSBusinessPartner, TMOSDelegateDocument, TMOSDelegateMatch, TMOSDocumentStatus, TMOSInvitationLetterStatus, TMOSItineraryItem, TMOSMessageLog, TMOSTravelCase, TMOSTravelTaskStatus, TMOSVisaStatus, TMOSWorkflowStage } from '@/types/tmos';
 import { stageToLegacyStatus } from '@/services/tmosService';
+import AdminEventsFollowupsTab from '@/components/admin/AdminEventsFollowupsTab';
 
 const mockDelegates: EventDelegate[] = [
   { id: 'del1', businessId: 'b1', businessName: 'Lagos Agro Exports Ltd', contactName: 'Emeka Okonkwo', email: 'emeka@lagosagro.ng', phone: '+2348012345678', journeyTrack: 'Executive Track', status: 'confirmed', registrationDate: '2026-02-15', visaSupport: true },
@@ -641,6 +642,7 @@ export default function AdminEventsPage() {
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="delegates">Delegates</TabsTrigger>
             <TabsTrigger value="delegations">Delegations</TabsTrigger>
+            <TabsTrigger value="followups">Follow-ups</TabsTrigger>
           </TabsList>
 
           <TabsContent value="registrations" className="space-y-4">
@@ -761,6 +763,7 @@ export default function AdminEventsPage() {
                 )}
               </CardContent>
             </Card>
+
             <Dialog open={Boolean(selectedRegistration)} onOpenChange={(open) => !open && setSelectedRegistration(null)}>
               <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
                 {selectedRegistration && (
@@ -1219,6 +1222,10 @@ export default function AdminEventsPage() {
                 )}
               </DialogContent>
             </Dialog>
+          </TabsContent>
+
+          <TabsContent value="followups" className="space-y-6">
+            <AdminEventsFollowupsTab />
           </TabsContent>
 
 
