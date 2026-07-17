@@ -225,7 +225,7 @@ export default function AdminEventsPage() {
           acc[item.event_registration_id] = [...(acc[item.event_registration_id] || []), item];
           return acc;
         }, {}));
-        setTravelMap((travelCases || []).reduce<Record<string, TMOSTravelCase>((acc, travelCase: any) => {
+        setTravelMap((travelCases || []).reduce<Record<string, TMOSTravelCase>>((acc, travelCase: any) => {
           acc[travelCase.event_registration_id] = travelCase;
           return acc;
         }, {}));
