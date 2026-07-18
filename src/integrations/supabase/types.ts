@@ -576,6 +576,105 @@ export type Database = {
         }
         Relationships: []
       }
+      tmos_deal_followups: {
+        Row: {
+          attendee_email: string
+          attendee_name: string
+          company: string | null
+          company_contact: string | null
+          completed_at: string | null
+          created_at: string
+          deal_currency: string
+          deal_type: string
+          deal_value: number
+          event_id: string
+          event_registration_id: string | null
+          event_title: string
+          follow_up_owner: string
+          id: string
+          last_action_by: string | null
+          last_action_date: string | null
+          match_id: string | null
+          meeting_date: string | null
+          meeting_notes: string | null
+          meeting_outcome: string | null
+          next_action_date: string | null
+          next_action_type: string
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attendee_email: string
+          attendee_name: string
+          company?: string | null
+          company_contact?: string | null
+          completed_at?: string | null
+          created_at?: string
+          deal_currency?: string
+          deal_type?: string
+          deal_value?: number
+          event_id: string
+          event_registration_id?: string | null
+          event_title: string
+          follow_up_owner?: string
+          id?: string
+          last_action_by?: string | null
+          last_action_date?: string | null
+          match_id?: string | null
+          meeting_date?: string | null
+          meeting_notes?: string | null
+          meeting_outcome?: string | null
+          next_action_date?: string | null
+          next_action_type?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attendee_email?: string
+          attendee_name?: string
+          company?: string | null
+          company_contact?: string | null
+          completed_at?: string | null
+          created_at?: string
+          deal_currency?: string
+          deal_type?: string
+          deal_value?: number
+          event_id?: string
+          event_registration_id?: string | null
+          event_title?: string
+          follow_up_owner?: string
+          id?: string
+          last_action_by?: string | null
+          last_action_date?: string | null
+          match_id?: string | null
+          meeting_date?: string | null
+          meeting_notes?: string | null
+          meeting_outcome?: string | null
+          next_action_date?: string | null
+          next_action_type?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tmos_deal_followups_event_registration_id_fkey"
+            columns: ["event_registration_id"]
+            isOneToOne: false
+            referencedRelation: "event_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tmos_deal_followups_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "tmos_delegate_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tmos_delegate_documents: {
         Row: {
           created_at: string
