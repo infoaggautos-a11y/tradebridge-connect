@@ -251,572 +251,6 @@ export type Database = {
         }
         Relationships: []
       }
-      tmos_stage_events: {
-        Row: {
-          actor_id: string | null
-          created_at: string
-          event_id: string
-          event_registration_id: string
-          from_stage: string | null
-          id: string
-          reason: string | null
-          to_stage: string
-        }
-        Insert: {
-          actor_id?: string | null
-          created_at?: string
-          event_id: string
-          event_registration_id: string
-          from_stage?: string | null
-          id?: string
-          reason?: string | null
-          to_stage: string
-        }
-        Update: {
-          actor_id?: string | null
-          created_at?: string
-          event_id?: string
-          event_registration_id?: string
-          from_stage?: string | null
-          id?: string
-          reason?: string | null
-          to_stage?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tmos_stage_events_event_registration_id_fkey"
-            columns: ["event_registration_id"]
-            isOneToOne: false
-            referencedRelation: "event_registrations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tmos_document_requirements: {
-        Row: {
-          applies_to_stages: string[]
-          code: string
-          created_at: string
-          description: string | null
-          event_id: string
-          id: string
-          label: string
-          required: boolean
-          updated_at: string
-        }
-        Insert: {
-          applies_to_stages?: string[]
-          code: string
-          created_at?: string
-          description?: string | null
-          event_id: string
-          id?: string
-          label: string
-          required?: boolean
-          updated_at?: string
-        }
-        Update: {
-          applies_to_stages?: string[]
-          code?: string
-          created_at?: string
-          description?: string | null
-          event_id?: string
-          id?: string
-          label?: string
-          required?: boolean
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      tmos_delegate_documents: {
-        Row: {
-          created_at: string
-          document_code: string
-          event_id: string
-          event_registration_id: string
-          file_name: string | null
-          file_url: string | null
-          id: string
-          label: string
-          review_notes: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string
-          updated_at: string
-          uploaded_at: string | null
-        }
-        Insert: {
-          created_at?: string
-          document_code: string
-          event_id: string
-          event_registration_id: string
-          file_name?: string | null
-          file_url?: string | null
-          id?: string
-          label: string
-          review_notes?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          updated_at?: string
-          uploaded_at?: string | null
-        }
-        Update: {
-          created_at?: string
-          document_code?: string
-          event_id?: string
-          event_registration_id?: string
-          file_name?: string | null
-          file_url?: string | null
-          id?: string
-          label?: string
-          review_notes?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          updated_at?: string
-          uploaded_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tmos_delegate_documents_event_registration_id_fkey"
-            columns: ["event_registration_id"]
-            isOneToOne: false
-            referencedRelation: "event_registrations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tmos_business_partners: {
-        Row: {
-          company_name: string
-          contact_name: string | null
-          country: string | null
-          created_at: string
-          email: string | null
-          event_id: string
-          id: string
-          phone: string | null
-          profile: Json
-          sector: string | null
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          company_name: string
-          contact_name?: string | null
-          country?: string | null
-          created_at?: string
-          email?: string | null
-          event_id: string
-          id?: string
-          phone?: string | null
-          profile?: Json
-          sector?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          company_name?: string
-          contact_name?: string | null
-          country?: string | null
-          created_at?: string
-          email?: string | null
-          event_id?: string
-          id?: string
-          phone?: string | null
-          profile?: Json
-          sector?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      tmos_delegate_matches: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          event_id: string
-          event_registration_id: string
-          id: string
-          location: string | null
-          match_rationale: string | null
-          match_score: number
-          meeting_format: string
-          meeting_objective: string | null
-          notes: string | null
-          partner_company: string
-          partner_contact_name: string | null
-          partner_country: string | null
-          partner_email: string | null
-          partner_id: string | null
-          partner_sector: string | null
-          scheduled_at: string | null
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          event_id: string
-          event_registration_id: string
-          id?: string
-          location?: string | null
-          match_rationale?: string | null
-          match_score?: number
-          meeting_format?: string
-          meeting_objective?: string | null
-          notes?: string | null
-          partner_company: string
-          partner_contact_name?: string | null
-          partner_country?: string | null
-          partner_email?: string | null
-          partner_id?: string | null
-          partner_sector?: string | null
-          scheduled_at?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          event_id?: string
-          event_registration_id?: string
-          id?: string
-          location?: string | null
-          match_rationale?: string | null
-          match_score?: number
-          meeting_format?: string
-          meeting_objective?: string | null
-          notes?: string | null
-          partner_company?: string
-          partner_contact_name?: string | null
-          partner_country?: string | null
-          partner_email?: string | null
-          partner_id?: string | null
-          partner_sector?: string | null
-          scheduled_at?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tmos_delegate_matches_event_registration_id_fkey"
-            columns: ["event_registration_id"]
-            isOneToOne: false
-            referencedRelation: "event_registrations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tmos_delegate_matches_partner_id_fkey"
-            columns: ["partner_id"]
-            isOneToOne: false
-            referencedRelation: "tmos_business_partners"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tmos_itinerary_items: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          description: string | null
-          end_at: string | null
-          event_id: string
-          event_registration_id: string
-          id: string
-          item_type: string
-          location: string | null
-          match_id: string | null
-          start_at: string
-          status: string
-          title: string
-          updated_at: string
-          visibility: string
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          end_at?: string | null
-          event_id: string
-          event_registration_id: string
-          id?: string
-          item_type?: string
-          location?: string | null
-          match_id?: string | null
-          start_at: string
-          status?: string
-          title: string
-          updated_at?: string
-          visibility?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          end_at?: string | null
-          event_id?: string
-          event_registration_id?: string
-          id?: string
-          item_type?: string
-          location?: string | null
-          match_id?: string | null
-          start_at?: string
-          status?: string
-          title?: string
-          updated_at?: string
-          visibility?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tmos_itinerary_items_event_registration_id_fkey"
-            columns: ["event_registration_id"]
-            isOneToOne: false
-            referencedRelation: "event_registrations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tmos_itinerary_items_match_id_fkey"
-            columns: ["match_id"]
-            isOneToOne: false
-            referencedRelation: "tmos_delegate_matches"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tmos_travel_cases: {
-        Row: {
-          accommodation_name: string | null
-          accommodation_status: string
-          arrival_airport: string | null
-          arrival_at: string | null
-          assigned_to: string | null
-          created_at: string
-          departure_airport: string | null
-          departure_at: string | null
-          emergency_contact_name: string | null
-          emergency_contact_phone: string | null
-          event_id: string
-          event_registration_id: string
-          flight_status: string
-          id: string
-          invitation_letter_status: string
-          notes: string | null
-          passport_valid_until: string | null
-          updated_at: string
-          visa_appointment_at: string | null
-          visa_status: string
-        }
-        Insert: {
-          accommodation_name?: string | null
-          accommodation_status?: string
-          arrival_airport?: string | null
-          arrival_at?: string | null
-          assigned_to?: string | null
-          created_at?: string
-          departure_airport?: string | null
-          departure_at?: string | null
-          emergency_contact_name?: string | null
-          emergency_contact_phone?: string | null
-          event_id: string
-          event_registration_id: string
-          flight_status?: string
-          id?: string
-          invitation_letter_status?: string
-          notes?: string | null
-          passport_valid_until?: string | null
-          updated_at?: string
-          visa_appointment_at?: string | null
-          visa_status?: string
-        }
-        Update: {
-          accommodation_name?: string | null
-          accommodation_status?: string
-          arrival_airport?: string | null
-          arrival_at?: string | null
-          assigned_to?: string | null
-          created_at?: string
-          departure_airport?: string | null
-          departure_at?: string | null
-          emergency_contact_name?: string | null
-          emergency_contact_phone?: string | null
-          event_id?: string
-          event_registration_id?: string
-          flight_status?: string
-          id?: string
-          invitation_letter_status?: string
-          notes?: string | null
-          passport_valid_until?: string | null
-          updated_at?: string
-          visa_appointment_at?: string | null
-          visa_status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tmos_travel_cases_event_registration_id_fkey"
-            columns: ["event_registration_id"]
-            isOneToOne: true
-            referencedRelation: "event_registrations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tmos_deal_followups: {
-        Row: {
-          attendee_email: string
-          attendee_name: string
-          company: string | null
-          company_contact: string | null
-          completed_at: string | null
-          created_at: string
-          deal_currency: string
-          deal_type: string
-          deal_value: number
-          event_id: string
-          event_registration_id: string | null
-          event_title: string
-          follow_up_owner: string
-          id: string
-          last_action_by: string | null
-          last_action_date: string | null
-          match_id: string | null
-          meeting_date: string | null
-          meeting_notes: string | null
-          meeting_outcome: string | null
-          next_action_date: string | null
-          next_action_type: string
-          notes: string | null
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          attendee_email: string
-          attendee_name: string
-          company?: string | null
-          company_contact?: string | null
-          completed_at?: string | null
-          created_at?: string
-          deal_currency?: string
-          deal_type?: string
-          deal_value?: number
-          event_id: string
-          event_registration_id?: string | null
-          event_title: string
-          follow_up_owner?: string
-          id?: string
-          last_action_by?: string | null
-          last_action_date?: string | null
-          match_id?: string | null
-          meeting_date?: string | null
-          meeting_notes?: string | null
-          meeting_outcome?: string | null
-          next_action_date?: string | null
-          next_action_type?: string
-          notes?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          attendee_email?: string
-          attendee_name?: string
-          company?: string | null
-          company_contact?: string | null
-          completed_at?: string | null
-          created_at?: string
-          deal_currency?: string
-          deal_type?: string
-          deal_value?: number
-          event_id?: string
-          event_registration_id?: string | null
-          event_title?: string
-          follow_up_owner?: string
-          id?: string
-          last_action_by?: string | null
-          last_action_date?: string | null
-          match_id?: string | null
-          meeting_date?: string | null
-          meeting_notes?: string | null
-          meeting_outcome?: string | null
-          next_action_date?: string | null
-          next_action_type?: string
-          notes?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tmos_deal_followups_event_registration_id_fkey"
-            columns: ["event_registration_id"]
-            isOneToOne: false
-            referencedRelation: "event_registrations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tmos_deal_followups_match_id_fkey"
-            columns: ["match_id"]
-            isOneToOne: false
-            referencedRelation: "tmos_delegate_matches"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tmos_message_logs: {
-        Row: {
-          channel: string
-          created_at: string
-          error_message: string | null
-          event_id: string
-          event_registration_id: string | null
-          id: string
-          provider_message_id: string | null
-          recipient: string
-          sent_at: string | null
-          status: string
-          subject: string | null
-          template_key: string | null
-          workflow_stage: string | null
-        }
-        Insert: {
-          channel: string
-          created_at?: string
-          error_message?: string | null
-          event_id: string
-          event_registration_id?: string | null
-          id?: string
-          provider_message_id?: string | null
-          recipient: string
-          sent_at?: string | null
-          status?: string
-          subject?: string | null
-          template_key?: string | null
-          workflow_stage?: string | null
-        }
-        Update: {
-          channel?: string
-          created_at?: string
-          error_message?: string | null
-          event_id?: string
-          event_registration_id?: string | null
-          id?: string
-          provider_message_id?: string | null
-          recipient?: string
-          sent_at?: string | null
-          status?: string
-          subject?: string | null
-          template_key?: string | null
-          workflow_stage?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tmos_message_logs_event_registration_id_fkey"
-            columns: ["event_registration_id"]
-            isOneToOne: false
-            referencedRelation: "event_registrations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       match_requests: {
         Row: {
           admin_notes: string | null
@@ -1141,6 +575,105 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      tmos_deal_followups: {
+        Row: {
+          attendee_email: string
+          attendee_name: string
+          company: string | null
+          company_contact: string | null
+          completed_at: string | null
+          created_at: string
+          deal_currency: string
+          deal_type: string
+          deal_value: number
+          event_id: string
+          event_registration_id: string | null
+          event_title: string
+          follow_up_owner: string
+          id: string
+          last_action_by: string | null
+          last_action_date: string | null
+          match_id: string | null
+          meeting_date: string | null
+          meeting_notes: string | null
+          meeting_outcome: string | null
+          next_action_date: string | null
+          next_action_type: string
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attendee_email: string
+          attendee_name: string
+          company?: string | null
+          company_contact?: string | null
+          completed_at?: string | null
+          created_at?: string
+          deal_currency?: string
+          deal_type?: string
+          deal_value?: number
+          event_id: string
+          event_registration_id?: string | null
+          event_title: string
+          follow_up_owner?: string
+          id?: string
+          last_action_by?: string | null
+          last_action_date?: string | null
+          match_id?: string | null
+          meeting_date?: string | null
+          meeting_notes?: string | null
+          meeting_outcome?: string | null
+          next_action_date?: string | null
+          next_action_type?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attendee_email?: string
+          attendee_name?: string
+          company?: string | null
+          company_contact?: string | null
+          completed_at?: string | null
+          created_at?: string
+          deal_currency?: string
+          deal_type?: string
+          deal_value?: number
+          event_id?: string
+          event_registration_id?: string | null
+          event_title?: string
+          follow_up_owner?: string
+          id?: string
+          last_action_by?: string | null
+          last_action_date?: string | null
+          match_id?: string | null
+          meeting_date?: string | null
+          meeting_notes?: string | null
+          meeting_outcome?: string | null
+          next_action_date?: string | null
+          next_action_type?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tmos_deal_followups_event_registration_id_fkey"
+            columns: ["event_registration_id"]
+            isOneToOne: false
+            referencedRelation: "event_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tmos_deal_followups_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "tmos_delegate_matches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tmos_delegate_documents: {
         Row: {
