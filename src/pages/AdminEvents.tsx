@@ -158,6 +158,9 @@ export default function AdminEventsPage() {
   const [itineraryMap, setItineraryMap] = useState<Record<string, TMOSItineraryItem[]>>({});
   const [travelMap, setTravelMap] = useState<Record<string, TMOSTravelCase>>({});
   const [regLoading, setRegLoading] = useState(true);
+  const [previewDoc, setPreviewDoc] = useState<TMOSDelegateDocument | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const [regSearch, setRegSearch] = useState('');
   const [selectedRegistration, setSelectedRegistration] = useState<EventRegistrationRow | null>(null);
   const [sendingUpdateId, setSendingUpdateId] = useState<string | null>(null);
@@ -302,24 +305,41 @@ export default function AdminEventsPage() {
     toast({ title: 'Document updated', description: `${document.label} marked as ${status.replace('_', ' ')}.` });
   };
 
-  const openDocument = async (document: TMOSDelegateDocument) => {
-    if (!document.file_url) {
-      toast({ title: 'No file available', variant: 'destructive' });
-      return;
-    }
-    if (document.file_url.startsWith('http')) {
-      window.open(document.file_url, '_blank', 'noopener,noreferrer');
-      return;
-    }
+  const getDocumentUrl = async (document: TMOSDelegateDocument) => {
+    if (!document.file_url) return null;
+    if (document.file_url.startsWith('http')) return document.file_url;
     const { data, error } = await supabase.storage
       .from('tmos-documents')
       .createSignedUrl(document.file_url, 600);
     if (error || !data?.signedUrl) {
       toast({ title: 'Unable to open document', description: error?.message, variant: 'destructive' });
+      return null;
+    }
+    return data.signedUrl;
+  };
+
+  const openDocument = async (document: TMOSDelegateDocument) => {
+    if (!document.file_url) {
+      toast({ title: 'No file available', variant: 'destructive' });
       return;
     }
-    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+    const url = await getDocumentUrl(document);
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   };
+
+  const previewDocument = async (document: TMOSDelegateDocument) => {
+    if (!document.file_url) {
+      toast({ title: 'No file uploaded yet', description: 'This delegate has not submitted this document.', variant: 'destructive' });
+      return;
+    }
+    setPreviewDoc(document);
+    setPreviewUrl(null);
+    setPreviewLoading(true);
+    const url = await getDocumentUrl(document);
+    setPreviewUrl(url);
+    setPreviewLoading(false);
+  };
+
 
   const sendRegistrationUpdate = async (registration: EventRegistrationRow) => {
     setSendingUpdateId(registration.id);
@@ -856,18 +876,22 @@ export default function AdminEventsPage() {
                                   <Badge variant={document.status === 'approved' ? 'default' : document.status === 'rejected' ? 'destructive' : 'secondary'}>
                                     {document.status.replace('_', ' ')}
                                   </Badge>
+                                  <Button size="sm" variant="outline" onClick={() => previewDocument(document)} disabled={!document.file_url}>
+                                    <Eye className="h-4 w-4 mr-1" /> View
+                                  </Button>
                                   {document.file_url && (
-                                    <Button size="sm" variant="outline" onClick={() => openDocument(document)}>
-                                      <ExternalLink className="h-4 w-4 mr-1" /> Open
+                                    <Button size="sm" variant="ghost" onClick={() => openDocument(document)}>
+                                      <ExternalLink className="h-4 w-4" />
                                     </Button>
                                   )}
-                                  <Button size="sm" variant="ghost" onClick={() => updateDocumentStatus(document, 'approved')} disabled={document.status === 'approved'}>
+                                  <Button size="sm" variant="ghost" onClick={() => updateDocumentStatus(document, 'approved')} disabled={document.status === 'approved' || !document.file_url}>
                                     <CheckCircle className="h-4 w-4 text-green-600" />
                                   </Button>
                                   <Button size="sm" variant="ghost" onClick={() => updateDocumentStatus(document, 'rejected')} disabled={document.status === 'rejected'}>
                                     <XCircle className="h-4 w-4 text-destructive" />
                                   </Button>
                                 </div>
+
                               </div>
                             )) : (
                               <p className="text-sm text-muted-foreground">No document records yet.</p>
@@ -1451,7 +1475,54 @@ export default function AdminEventsPage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <Dialog open={!!previewDoc} onOpenChange={(open) => { if (!open) { setPreviewDoc(null); setPreviewUrl(null); } }}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>{previewDoc?.label}</DialogTitle>
+              <DialogDescription>{previewDoc?.file_name || 'Document preview'}</DialogDescription>
+            </DialogHeader>
+            <div className="h-[65vh] w-full overflow-auto rounded-md border bg-muted/30">
+              {previewLoading && (
+                <div className="flex h-full items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              )}
+              {!previewLoading && previewUrl && (
+                /\.(png|jpe?g|webp|gif)$/i.test(previewDoc?.file_name || previewDoc?.file_url || '') ? (
+                  <img src={previewUrl} alt={previewDoc?.label || 'Document'} className="mx-auto max-h-full object-contain" />
+                ) : (
+                  <iframe src={previewUrl} title={previewDoc?.label || 'Document'} className="h-full w-full" />
+                )
+              )}
+              {!previewLoading && !previewUrl && (
+                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Preview unavailable.</div>
+              )}
+            </div>
+            <DialogFooter className="gap-2 sm:justify-between">
+              <Button variant="outline" onClick={() => previewDoc && openDocument(previewDoc)} disabled={!previewUrl}>
+                <ExternalLink className="h-4 w-4 mr-1" /> Open in new tab
+              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="destructive"
+                  onClick={() => { if (previewDoc) { updateDocumentStatus(previewDoc, 'rejected'); setPreviewDoc(null); } }}
+                  disabled={previewDoc?.status === 'rejected'}
+                >
+                  <XCircle className="h-4 w-4 mr-1" /> Reject
+                </Button>
+                <Button
+                  onClick={() => { if (previewDoc) { updateDocumentStatus(previewDoc, 'approved'); setPreviewDoc(null); } }}
+                  disabled={previewDoc?.status === 'approved'}
+                >
+                  <CheckCircle className="h-4 w-4 mr-1" /> Approve
+                </Button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
+
   );
 }
