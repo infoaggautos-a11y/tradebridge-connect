@@ -164,7 +164,15 @@ Or info@daunointegrated.com`;
       <a href="mailto:info@daunointegrated.com">info@daunointegrated.com</a></p>
     `;
 
-    await sendEmail({ to: [recipient], subject, text, html });
+    let emailSent = true;
+    let emailError: string | null = null;
+    try {
+      await sendEmail({ to: [recipient], subject, text, html });
+    } catch (sendError) {
+      emailSent = false;
+      emailError = sendError instanceof Error ? sendError.message : String(sendError);
+      console.error("Registration update email failed:", emailError);
+    }
 
     await supabaseAdmin.from("tmos_message_logs").insert({
       event_registration_id: registration.id,
