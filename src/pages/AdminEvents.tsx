@@ -158,6 +158,9 @@ export default function AdminEventsPage() {
   const [itineraryMap, setItineraryMap] = useState<Record<string, TMOSItineraryItem[]>>({});
   const [travelMap, setTravelMap] = useState<Record<string, TMOSTravelCase>>({});
   const [regLoading, setRegLoading] = useState(true);
+  const [previewDoc, setPreviewDoc] = useState<TMOSDelegateDocument | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const [regSearch, setRegSearch] = useState('');
   const [selectedRegistration, setSelectedRegistration] = useState<EventRegistrationRow | null>(null);
   const [sendingUpdateId, setSendingUpdateId] = useState<string | null>(null);
