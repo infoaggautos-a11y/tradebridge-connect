@@ -1475,7 +1475,54 @@ export default function AdminEventsPage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <Dialog open={!!previewDoc} onOpenChange={(open) => { if (!open) { setPreviewDoc(null); setPreviewUrl(null); } }}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>{previewDoc?.label}</DialogTitle>
+              <DialogDescription>{previewDoc?.file_name || 'Document preview'}</DialogDescription>
+            </DialogHeader>
+            <div className="h-[65vh] w-full overflow-auto rounded-md border bg-muted/30">
+              {previewLoading && (
+                <div className="flex h-full items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              )}
+              {!previewLoading && previewUrl && (
+                /\.(png|jpe?g|webp|gif)$/i.test(previewDoc?.file_name || previewDoc?.file_url || '') ? (
+                  <img src={previewUrl} alt={previewDoc?.label || 'Document'} className="mx-auto max-h-full object-contain" />
+                ) : (
+                  <iframe src={previewUrl} title={previewDoc?.label || 'Document'} className="h-full w-full" />
+                )
+              )}
+              {!previewLoading && !previewUrl && (
+                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Preview unavailable.</div>
+              )}
+            </div>
+            <DialogFooter className="gap-2 sm:justify-between">
+              <Button variant="outline" onClick={() => previewDoc && openDocument(previewDoc)} disabled={!previewUrl}>
+                <ExternalLink className="h-4 w-4 mr-1" /> Open in new tab
+              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="destructive"
+                  onClick={() => { if (previewDoc) { updateDocumentStatus(previewDoc, 'rejected'); setPreviewDoc(null); } }}
+                  disabled={previewDoc?.status === 'rejected'}
+                >
+                  <XCircle className="h-4 w-4 mr-1" /> Reject
+                </Button>
+                <Button
+                  onClick={() => { if (previewDoc) { updateDocumentStatus(previewDoc, 'approved'); setPreviewDoc(null); } }}
+                  disabled={previewDoc?.status === 'approved'}
+                >
+                  <CheckCircle className="h-4 w-4 mr-1" /> Approve
+                </Button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
+
   );
 }
