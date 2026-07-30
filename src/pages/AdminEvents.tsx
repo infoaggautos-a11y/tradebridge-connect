@@ -876,18 +876,22 @@ export default function AdminEventsPage() {
                                   <Badge variant={document.status === 'approved' ? 'default' : document.status === 'rejected' ? 'destructive' : 'secondary'}>
                                     {document.status.replace('_', ' ')}
                                   </Badge>
+                                  <Button size="sm" variant="outline" onClick={() => previewDocument(document)} disabled={!document.file_url}>
+                                    <Eye className="h-4 w-4 mr-1" /> View
+                                  </Button>
                                   {document.file_url && (
-                                    <Button size="sm" variant="outline" onClick={() => openDocument(document)}>
-                                      <ExternalLink className="h-4 w-4 mr-1" /> Open
+                                    <Button size="sm" variant="ghost" onClick={() => openDocument(document)}>
+                                      <ExternalLink className="h-4 w-4" />
                                     </Button>
                                   )}
-                                  <Button size="sm" variant="ghost" onClick={() => updateDocumentStatus(document, 'approved')} disabled={document.status === 'approved'}>
+                                  <Button size="sm" variant="ghost" onClick={() => updateDocumentStatus(document, 'approved')} disabled={document.status === 'approved' || !document.file_url}>
                                     <CheckCircle className="h-4 w-4 text-green-600" />
                                   </Button>
                                   <Button size="sm" variant="ghost" onClick={() => updateDocumentStatus(document, 'rejected')} disabled={document.status === 'rejected'}>
                                     <XCircle className="h-4 w-4 text-destructive" />
                                   </Button>
                                 </div>
+
                               </div>
                             )) : (
                               <p className="text-sm text-muted-foreground">No document records yet.</p>
