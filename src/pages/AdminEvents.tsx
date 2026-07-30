@@ -302,24 +302,41 @@ export default function AdminEventsPage() {
     toast({ title: 'Document updated', description: `${document.label} marked as ${status.replace('_', ' ')}.` });
   };
 
-  const openDocument = async (document: TMOSDelegateDocument) => {
-    if (!document.file_url) {
-      toast({ title: 'No file available', variant: 'destructive' });
-      return;
-    }
-    if (document.file_url.startsWith('http')) {
-      window.open(document.file_url, '_blank', 'noopener,noreferrer');
-      return;
-    }
+  const getDocumentUrl = async (document: TMOSDelegateDocument) => {
+    if (!document.file_url) return null;
+    if (document.file_url.startsWith('http')) return document.file_url;
     const { data, error } = await supabase.storage
       .from('tmos-documents')
       .createSignedUrl(document.file_url, 600);
     if (error || !data?.signedUrl) {
       toast({ title: 'Unable to open document', description: error?.message, variant: 'destructive' });
+      return null;
+    }
+    return data.signedUrl;
+  };
+
+  const openDocument = async (document: TMOSDelegateDocument) => {
+    if (!document.file_url) {
+      toast({ title: 'No file available', variant: 'destructive' });
       return;
     }
-    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+    const url = await getDocumentUrl(document);
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   };
+
+  const previewDocument = async (document: TMOSDelegateDocument) => {
+    if (!document.file_url) {
+      toast({ title: 'No file uploaded yet', description: 'This delegate has not submitted this document.', variant: 'destructive' });
+      return;
+    }
+    setPreviewDoc(document);
+    setPreviewUrl(null);
+    setPreviewLoading(true);
+    const url = await getDocumentUrl(document);
+    setPreviewUrl(url);
+    setPreviewLoading(false);
+  };
+
 
   const sendRegistrationUpdate = async (registration: EventRegistrationRow) => {
     setSendingUpdateId(registration.id);
