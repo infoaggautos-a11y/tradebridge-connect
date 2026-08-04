@@ -110,10 +110,27 @@ Please review and approve this match request in the admin dashboard.
 Dashboard: ${req.headers.get("origin") || "https://daunointegrated.lovable.app"}/admin/matches
     `.trim();
 
-    // Log the notification (actual email sending will work when email domain is configured)
-    console.log(`Notification emails would be sent to: ${adminEmails.join(", ")}`);
-    console.log(`Subject: ${emailSubject}`);
-    console.log(`Body: ${emailBody}`);
+    try {
+      const resendApiKey = Deno.env.get("RESEND_API_KEY") ?? Deno.env.get("RESEND_API");
+      if (!resendApiKey) throw new Error("RESEND_API_KEY is not configured");
+      const from = Deno.env.get("RESEND_FROM_EMAIL") ?? "Dauno Integrated <onboarding@resend.dev>";
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from,
+          to: adminEmails,
+          subject: emailSubject,
+          text: emailBody,
+          html: `<pre style="font-family:Arial,sans-serif;font-size:14px">${emailBody.replace(/</g, "&lt;")}</pre>`,
+        }),
+      });
+      if (!res.ok) throw new Error(`Resend email failed: ${res.status} ${await res.text()}`);
+      console.log(`Match request notification sent to: ${adminEmails.join(", ")}`);
+    } catch (emailError) {
+      console.error("Match request notification email failed:", emailError);
+    }
+
 
     return new Response(JSON.stringify({
       success: true,
