@@ -72,6 +72,43 @@ serve(async (req) => {
       name: contact_person,
     }).eq("id", userId);
 
+    // Notify admin inboxes of the new business registration
+    try {
+      const resendApiKey = Deno.env.get("RESEND_API_KEY") ?? Deno.env.get("RESEND_API");
+      if (!resendApiKey) throw new Error("RESEND_API_KEY is not configured");
+      const from = Deno.env.get("RESEND_FROM_EMAIL") ?? "Dauno Integrated <onboarding@resend.dev>";
+      const summary = `New Business Registration
+
+Company: ${company_name}
+Contact: ${contact_person}
+Email: ${email}
+Phone: ${phone || "-"}
+Country: ${country || "-"}
+City: ${city || "-"}
+Sector: ${sector || "-"}
+Website: ${website || "-"}
+Notes: ${additional_notes || "-"}`;
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from,
+          to: [
+            "daunointegrated@gmail.com",
+            "info@daunointegrated.com",
+            "admin@daunointegrated.com",
+          ],
+          subject: `New Business Registration: ${company_name}`,
+          text: summary,
+          html: `<pre style="font-family:Arial,sans-serif;font-size:14px">${summary.replace(/</g, "&lt;")}</pre>`,
+        }),
+      });
+      if (!res.ok) throw new Error(`Resend email failed: ${res.status} ${await res.text()}`);
+    } catch (emailError) {
+      console.error("Admin registration notification failed:", emailError);
+    }
+
+
     return new Response(JSON.stringify({
       success: true,
       message: "Registration successful! An invitation email has been sent to set up your password.",
