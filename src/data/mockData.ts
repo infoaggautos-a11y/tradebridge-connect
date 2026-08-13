@@ -428,6 +428,70 @@ export const businesses: Business[] = [
 export const events: TradeEvent[] = [
   // ===== UPCOMING =====
   {
+    id: 'e-cocoa-brussels-2026',
+    title: 'Brussels–Nigeria Cocoa B2B 2026 🇧🇪🤝🇳🇬',
+    tagline: 'Register now for early-bird benefits — Nigerian cocoa meets Europe\u2019s buyers',
+    type: 'trade-mission',
+    description:
+      "A high-level cocoa business-to-business forum in Brussels connecting Nigerian cocoa producers, processors, cooperatives and exporters directly with European buyers, grinders, chocolate manufacturers and traders. Convened by the European Union–Nigeria Agribusiness Platform (EUNAP) with support from the European Cocoa Association (ECA), and holding on the sidelines of the Nigeria–Belgium–Luxembourg Business Forum. Dauno Integrated Ltd coordinates the Nigerian delegation: pre-arranged buyer meetings, EUDR deforestation-compliance briefings, sustainability and traceability clinics, and follow-up deal support after Brussels.",
+    date: '2026-10-29',
+    endDate: '2026-10-29',
+    location: 'Brussels, Belgium',
+    focusAreas: [
+      'Cocoa beans, butter, liquor & powder',
+      'EUDR deforestation compliance',
+      'Traceability & sustainability certification',
+      'Quality, grading & processing standards',
+      'Export logistics & trade finance',
+      'Value addition and processing investment',
+    ],
+    highlights: [
+      'Pre-arranged B2B meetings with European cocoa buyers and grinders',
+      'Convened by EUNAP with support from the European Cocoa Association (ECA)',
+      'Holding on the sidelines of the Nigeria–Belgium–Luxembourg Business Forum',
+      'EUDR compliance and traceability clinics for Nigerian exporters',
+      'Early-bird benefits for delegates who register ahead of the deadline',
+      'Visa invitation letters and travel coordination for Nigerian delegates',
+    ],
+    outcomes: [
+      'Direct buyer relationships with European cocoa off-takers',
+      'Clear roadmap to EUDR and sustainability compliance',
+      'Signed LOIs, MOUs and trial-shipment agreements',
+      'Improved market intelligence on EU cocoa pricing and standards',
+      'Investment leads for in-country cocoa processing and value addition',
+    ],
+    organizers: [
+      'European Union–Nigeria Agribusiness Platform (EUNAP)',
+      'European Cocoa Association (ECA)',
+      'Agribusiness Register (ABR) Limited',
+      'Dauno Integrated Ltd — Nigerian Delegation Coordination',
+    ],
+    shareTagline: '🍫 Brussels · 29 October 2026 · Brussels–Nigeria Cocoa B2B 2026 — take Nigerian cocoa straight to Europe\u2019s buyers.',
+    agenda: [
+      { day: 'Thu 29 Oct', time: '08:30', title: 'Delegate registration, welcome coffee & networking' },
+      { day: 'Thu 29 Oct', time: '09:30', title: 'Opening session — EUNAP & European Cocoa Association welcome' },
+      { day: 'Thu 29 Oct', time: '10:15', title: 'The EU cocoa market: demand, pricing and quality expectations' },
+      { day: 'Thu 29 Oct', time: '11:15', title: 'EUDR deforestation regulation & traceability clinic for exporters' },
+      { day: 'Thu 29 Oct', time: '12:30', title: 'Networking lunch with European buyers and traders' },
+      { day: 'Thu 29 Oct', time: '14:00', title: 'One-to-one B2B matchmaking: Nigerian suppliers × EU buyers' },
+      { day: 'Thu 29 Oct', time: '16:00', title: 'Value addition, processing investment & trade finance panel' },
+      { day: 'Thu 29 Oct', time: '17:30', title: 'Closing remarks, LOI/MOU signings & evening reception' },
+    ],
+    speakers: [
+      { name: 'EUNAP Secretariat', role: 'Convener', company: 'EU–Nigeria Agribusiness Platform' },
+      { name: 'European Cocoa Association', role: 'Industry Partner', company: 'ECA, Brussels' },
+      { name: 'Agribusiness Register (ABR) Limited', role: 'Platform Manager', company: 'ABR Limited' },
+      { name: 'Dauno Integrated Ltd', role: 'Nigerian Delegate Coordination', company: 'Asokoro, Abuja, Nigeria' },
+    ],
+    sponsors: ['European Union (Global Gateway)', 'European Cocoa Association', 'Agribusiness Register (ABR) Limited', 'Dauno Integrated Ltd'],
+    ticketTiers: [
+      { tier: 'free', price: 0, label: 'Nigerian Delegate Pass — Register Interest', perks: ['Full forum access', 'Pre-arranged B2B buyer meetings', 'EUDR & traceability clinic', 'Networking lunch and reception', 'Visa invitation letter on request'] },
+    ],
+    registrations: 0, capacity: 80, isPast: false,
+    imageUrl: '/images/events/brussels-nigeria-cocoa.jpg',
+  },
+
+  {
     id: 'e0',
     title: 'B2B Italy 🇮🇹 Nigeria 🇳🇬 — One Week That Reshapes Trade',
     tagline: 'Advancing innovation, trade and sustainable food partnership',
